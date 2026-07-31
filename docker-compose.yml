@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nuvro_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nuvro
+      POSTGRES_PASSWORD: nuvro_dev_password
+      POSTGRES_DB: nuvro_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nuvro -d nuvro_dev']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: nuvro_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://nuvro:nuvro_dev_password@postgres:5432/nuvro_dev
+      PORT: 4000
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./backend:/app/backend
+      - ./packages:/app/packages
+      - ./database:/app/database
+      - /app/node_modules
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    container_name: nuvro_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      VITE_API_BASE_URL: http://localhost:4000/api
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+    driver: local

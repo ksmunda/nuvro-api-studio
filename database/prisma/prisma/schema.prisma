@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String?
+  displayName   String?
+  avatarUrl     String?
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ownedWorkspaces Workspace[]       @relation("WorkspaceOwner")
+  memberships     WorkspaceMember[]
+  refreshTokens   RefreshToken[]
+  apiKeys         ApiKey[]
+  requestHistory  RequestHistory[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique
+  keyPrefix  String
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  ownerId     String
+  owner       User     @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members      WorkspaceMember[]
+  collections  Collection[]
+  environments Environment[]
+
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+
+  @@map("workspace_role")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  folders  Folder[]
+  requests ApiRequest[]
+
+  @@index([workspaceId])
+  @@map("collections")
+}
+
+model Folder {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  parentId     String?
+  parent       Folder?    @relation("FolderTree", fields: [parentId], references: [id])
+  children     Folder[]   @relation("FolderTree")
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  requests ApiRequest[]
+
+  @@index([collectionId])
+  @@index([parentId])
+  @@map("folders")
+}
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+  HEAD
+  OPTIONS
+  TRACE
+  CONNECT
+
+  @@map("http_method")
+}
+
+enum AuthType {
+  NONE
+  BASIC
+  BEARER
+  API_KEY
+  OAUTH2
+  DIGEST
+
+  @@map("auth_type")
+}
+
+enum BodyType {
+  NONE
+  JSON
+  FORM_DATA
+  FORM_URL_ENCODED
+  RAW
+  BINARY
+  GRAPHQL
+
+  @@map("body_type")
+}
+
+model ApiRequest {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  method       HttpMethod @default(GET)
+  url          String
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  folderId     String?
+  folder       Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  headers      Json       @default("[]")
+  queryParams  Json       @default("[]")
+  authType     AuthType   @default(NONE)
+  authConfig   Json       @default("{}")
+  bodyType     BodyType   @default(NONE)
+  bodyContent  String?
+  sortOrder    Int        @default(0)
+  preScript    String?
+  postScript   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  history RequestHistory[]
+
+  @@index([collectionId])
+  @@index([folderId])
+  @@map("api_requests")
+}
+
+model Environment {
+  id          String    @id @default(cuid())
+  name        String
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  variables Variable[]
+
+  @@index([workspaceId])
+  @@map("environments")
+}
+
+model Variable {
+  id            String      @id @default(cuid())
+  key           String
+  value         String
+  description   String?
+  isSecret      Boolean     @default(false)
+  enabled       Boolean     @default(true)
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([environmentId, key])
+  @@index([environmentId])
+  @@map("variables")
+}
+
+enum RequestStatus {
+  PENDING
+  SUCCESS
+  ERROR
+  CANCELLED
+  TIMEOUT
+
+  @@map("request_status")
+}
+
+model RequestHistory {
+  id              String        @id @default(cuid())
+  requestId       String?
+  request         ApiRequest?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method          HttpMethod
+  url             String
+  requestHeaders  Json          @default("[]")
+  requestBody     String?
+  status          RequestStatus
+  statusCode      Int?
+  responseHeaders Json          @default("[]")
+  responseBody    String?
+  responseSize    Int?
+  durationMs      Int?
+  errorMessage    String?
+  executedAt      DateTime      @default(now())
+
+  @@index([userId, executedAt(sort: Desc)])
+  @@index([requestId])
+  @@map("request_history")
+}

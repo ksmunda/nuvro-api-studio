@@ -1,0 +1,31 @@
+{
+  "name": "@nuvro/validation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zod validation schemas — single source of truth for all runtime types",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas/common": "./src/schemas/common.ts",
+    "./schemas/auth": "./src/schemas/auth.ts",
+    "./schemas/workspace": "./src/schemas/workspace.ts",
+    "./schemas/collection": "./src/schemas/collection.ts",
+    "./schemas/request": "./src/schemas/request.ts",
+    "./schemas/environment": "./src/schemas/environment.ts",
+    "./schemas/history": "./src/schemas/history.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8",
+    "@nuvro/config": "workspace:*"
+  }
+}

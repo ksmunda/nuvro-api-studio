@@ -1,0 +1,26 @@
+{
+  "name": "@nuvro/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pluggable HTTP execution engine for NUVRO API Studio",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@nuvro/types": "workspace:*",
+    "@nuvro/validation": "workspace:*",
+    "@nuvro/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8",
+    "@nuvro/config": "workspace:*"
+  }
+}

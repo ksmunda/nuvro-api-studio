@@ -1,0 +1,6 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "backend/api"
+  - "database/prisma"
+  - "tests/e2e"
