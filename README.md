@@ -1,75 +1,420 @@
-# nuvro-api-studio
-A modern, open-source API development, testing, and management platform built with React, TypeScript, Node.js, and PostgreSQL.
+# 🚀 NUVRO API Studio
 
-re
+**NUVRO API Studio** is a modern, open-source API development, testing, and management platform designed for developers, teams, and API builders.
 
-I recommend starting with this:
+It provides a powerful workspace for creating, organizing, executing, testing, and managing API requests — with a clean developer-focused interface.
 
+The project is being built with **React, TypeScript, Node.js, Express, PostgreSQL, and Prisma**, with a future roadmap for **Windows, macOS, and Linux desktop applications**.
+
+---
+
+## ✨ Vision
+
+NUVRO API Studio aims to become a complete API development workspace that helps developers:
+
+* Build and execute API requests
+* Organize APIs into collections and folders
+* Manage environments and variables
+* Work with authentication
+* Inspect API responses
+* Save request history
+* Create automated API tests
+* Import and export API collections
+* Run collections
+* Collaborate with teams
+* Work from the web or desktop
+
+The initial focus is the **web application**.
+
+Desktop applications for **Windows, macOS, and Linux** are planned for future releases.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* React Router
+* TanStack Query
+* Zustand
+* React Hook Form
+* Zod
+* Monaco Editor
+
+### Backend
+
+* Node.js
+* TypeScript
+* Express.js
+* Zod
+
+### Database
+
+* PostgreSQL
+* Prisma ORM
+
+### Development
+
+* pnpm
+* Turborepo
+* ESLint
+* Prettier
+* Vitest
+* Supertest
+* Playwright
+
+### Infrastructure
+
+* Docker
+* GitHub Actions
+
+### Future Desktop Applications
+
+* Tauri
+* Windows
+* macOS
+* Linux
+
+---
+
+# 🎯 Current Status
+
+> 🚧 **NUVRO API Studio is currently under active development.**
+
+The project is being developed incrementally, starting with the web application.
+
+### Current development focus
+
+* [x] Project architecture
+* [x] Monorepo setup
+* [x] TypeScript configuration
+* [ ] Web application
+* [ ] API request builder
+* [ ] API request execution
+* [ ] Response viewer
+* [ ] Collections
+* [ ] Environments
+* [ ] Authentication
+* [ ] Request history
+* [ ] API testing
+* [ ] Import/export
+* [ ] Collection runner
+* [ ] Team workspaces
+* [ ] Desktop application
+
+---
+
+# 📋 Features
+
+## API Request Builder
+
+Create and execute HTTP requests using:
+
+* GET
+* POST
+* PUT
+* PATCH
+* DELETE
+* HEAD
+* OPTIONS
+
+Configure:
+
+* URL
+* Query parameters
+* Headers
+* Request body
+* Form data
+* URL-encoded data
+* Authentication
+
+---
+
+## 📁 Collections
+
+Organize API requests into collections and folders.
+
+Example:
+
+```text
+My Workspace
+│
+├── Authentication
+│   ├── Login
+│   ├── Register
+│   └── Refresh Token
+│
+├── Users
+│   ├── Get Users
+│   ├── Get User
+│   ├── Create User
+│   ├── Update User
+│   └── Delete User
+│
+└── Products
+    ├── Get Products
+    ├── Get Product
+    └── Create Product
+```
+
+---
+
+## 🌎 Environments
+
+Create multiple environments for different deployment stages.
+
+Example:
+
+```text
+Local
+Staging
+Production
+```
+
+Environment variables:
+
+```text
+BASE_URL=https://api.example.com
+API_TOKEN=your-token
+CLIENT_ID=your-client-id
+```
+
+Use variables in requests:
+
+```text
+{{BASE_URL}}/users
+```
+
+---
+
+## 🔐 Authentication
+
+Planned authentication methods include:
+
+* No Authentication
+* Bearer Token
+* Basic Authentication
+* API Key
+* OAuth 2.0
+
+---
+
+## 📊 Response Viewer
+
+Inspect API responses with:
+
+* HTTP status code
+* Response time
+* Response size
+* Response headers
+* JSON response
+* Raw response
+* Formatted response
+
+Example:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "John Doe"
+  }
+}
+```
+
+---
+
+## 🕘 Request History
+
+Automatically track previously executed requests.
+
+Example:
+
+```text
+GET     /users          200    125ms
+POST    /login          200    245ms
+GET     /products       200    98ms
+DELETE  /products/10    204    110ms
+```
+
+Users will be able to:
+
+* Re-run requests
+* Save requests
+* Delete history
+* Clear history
+
+---
+
+# 🧪 API Testing
+
+NUVRO API Studio will provide API testing capabilities.
+
+Example:
+
+```text
+GET /users
+```
+
+Tests:
+
+```text
+✓ Status code is 200
+✓ Response time < 500ms
+✓ Response contains "data"
+✓ Response contains user ID
+```
+
+Future versions will support automated test suites and collection-based testing.
+
+---
+
+# ▶️ Collection Runner
+
+Run multiple API requests sequentially.
+
+Example:
+
+```text
+Authentication
+      ↓
+Login
+      ↓
+Create User
+      ↓
+Get User
+      ↓
+Update User
+      ↓
+Delete User
+```
+
+Example result:
+
+```text
+Collection: User API Tests
+
+✓ Login              200
+✓ Create User        201
+✓ Get User           200
+✓ Update User        200
+✓ Delete User        204
+
+5 passed
+0 failed
+```
+
+---
+
+# 📥 Import & Export
+
+Planned support for importing and exporting API collections.
+
+### Planned formats
+
+* NUVRO API Studio format
+* Postman Collection format
+* JSON
+
+Example:
+
+```text
+my-api.nuvro.json
+```
+
+This will make it easier to migrate existing API projects into NUVRO API Studio.
+
+---
+
+# 👥 Workspaces
+
+Future versions will support workspaces for organizing projects and teams.
+
+Example:
+
+```text
+NUVRO Workspace
+│
+├── E-Commerce API
+├── Payment API
+├── Authentication API
+└── Internal API
+```
+
+---
+
+# 🏗️ Architecture
+
+NUVRO API Studio is designed as a monorepo so that the web application can be extended into desktop applications without rebuilding the entire product.
+
+```text
+                     NUVRO API STUDIO
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+          Web Application            Desktop Application
+              │                           │
+          React + TS                   Tauri
+              │                           │
+              └─────────────┬─────────────┘
+                            │
+                     Shared Packages
+                            │
+              ┌─────────────┼─────────────┐
+              │             │             │
+          API Client       Core           UI
+              │             │             │
+              └─────────────┴─────────────┘
+                            │
+                       Node.js API
+                            │
+                         Prisma
+                            │
+                       PostgreSQL
+```
+
+---
+
+# 📂 Project Structure
+
+```text
 nuvro-api-studio/
 │
 ├── apps/
+│   │
 │   ├── web/
-│   │   ├── public/
-│   │   └── src/
-│   │       ├── assets/
-│   │       ├── components/
-│   │       ├── features/
-│   │       │   ├── collections/
-│   │       │   ├── environments/
-│   │       │   ├── history/
-│   │       │   ├── requests/
-│   │       │   ├── responses/
-│   │       │   ├── testing/
-│   │       │   └── workspaces/
-│   │       ├── hooks/
-│   │       ├── layouts/
-│   │       ├── pages/
-│   │       ├── routes/
-│   │       ├── services/
-│   │       ├── stores/
-│   │       ├── types/
-│   │       ├── utils/
-│   │       ├── App.tsx
-│   │       └── main.tsx
+│   │   └── React web application
 │   │
 │   └── desktop/
-│       └── README.md
+│       └── Future Tauri desktop application
 │
 ├── packages/
+│   │
 │   ├── core/
-│   │   ├── src/
-│   │   │   ├── authentication/
-│   │   │   ├── collection/
-│   │   │   ├── environment/
-│   │   │   ├── request/
-│   │   │   ├── response/
-│   │   │   └── testing/
-│   │   └── package.json
+│   │   └── API Studio core functionality
 │   │
 │   ├── api-client/
-│   │   ├── src/
-│   │   └── package.json
+│   │   └── HTTP request engine
 │   │
 │   ├── types/
-│   │   ├── src/
-│   │   └── package.json
+│   │   └── Shared TypeScript types
 │   │
 │   ├── validation/
-│   │   ├── src/
-│   │   └── package.json
+│   │   └── Shared validation schemas
 │   │
 │   ├── ui/
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   └── index.ts
-│   │   └── package.json
+│   │   └── Shared React components
 │   │
 │   └── config/
-│       ├── eslint/
-│       ├── typescript/
-│       └── package.json
+│       └── Shared project configuration
 │
 ├── backend/
+│   │
 │   ├── src/
 │   │   ├── config/
 │   │   ├── middleware/
@@ -83,789 +428,566 @@ nuvro-api-studio/
 │   │   │   ├── users/
 │   │   │   └── workspaces/
 │   │   ├── routes/
-│   │   ├── services/
-│   │   ├── app.ts
-│   │   └── server.ts
+│   │   └── services/
 │   │
 │   └── tests/
 │
 ├── database/
-│   ├── prisma/
-│   │   ├── migrations/
-│   │   └── schema.prisma
-│   └── seed/
+│   └── prisma/
 │
 ├── docs/
 │   ├── architecture/
 │   ├── api/
-│   ├── development/
-│   └── screenshots/
+│   └── development/
 │
 ├── tests/
 │   ├── e2e/
 │   └── integration/
 │
 ├── scripts/
-│
 ├── docker/
 │
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml
-│   │   └── code-quality.yml
 │   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
 │   └── pull_request_template.md
 │
-├── .env.example
-├── .gitignore
-├── .editorconfig
-├── .prettierrc
 ├── docker-compose.yml
-├── LICENSE
 ├── package.json
 ├── pnpm-workspace.yaml
 ├── turbo.json
 ├── tsconfig.json
 └── README.md
+```
 
-This may look large, but you don't have to implement all of it immediately. The purpose is to establish the architecture.
+---
 
-2. Technology stack
+# 🚀 Getting Started
 
-I recommend:
+## Prerequisites
 
-Frontend
-React
-TypeScript
-Vite
-Tailwind CSS
-React Router
-TanStack Query
-Zustand
-React Hook Form
-Zod
-Monaco Editor
-Backend
-Node.js
-TypeScript
-Express.js
-Prisma
-PostgreSQL
-Zod
-Development
-pnpm
-Turborepo
-ESLint
-Prettier
-Vitest
-Supertest
-Playwright
-Infrastructure
-Docker
-GitHub Actions
-Future desktop
-Tauri
-3. Why TypeScript everywhere?
-
-Since your goal is specifically to improve Node.js + React, I strongly recommend:
-
-React       → TypeScript
-Node.js     → TypeScript
-Shared code → TypeScript
-
-Don't create:
-
-frontend → JavaScript
-backend  → JavaScript
-
-You will get much more value from the project if you learn the TypeScript ecosystem at the same time.
-
-4. Package manager
-
-Use pnpm.
-
-Your root:
-
-{
-  "name": "nuvro-api-studio",
-  "private": true,
-  "packageManager": "pnpm@10"
-}
-
-Then:
-
-pnpm-workspace.yaml
-packages:
-  - "apps/*"
-  - "packages/*"
-  - "backend"
-5. Monorepo tool
-
-Use Turborepo.
-
-Your structure becomes:
-
-apps/
-packages/
-backend/
-
-and Turborepo handles:
-
-build
-dev
-test
-lint
-type-check
-
-across the repository.
-
-6. Application architecture
-
-Your first application is:
-
-apps/web
-
-The web application communicates with:
-
-backend/
-
-Architecture:
-
-┌──────────────────────────────┐
-│        NUVRO API Studio      │
-│                              │
-│       React + TypeScript     │
-└──────────────┬───────────────┘
-               │
-               │ REST API
-               ▼
-┌──────────────────────────────┐
-│        Node.js Backend       │
-│                              │
-│          Express             │
-└──────────────┬───────────────┘
-               │
-       ┌───────┴────────┐
-       ▼                ▼
- PostgreSQL           Redis
-   Prisma            (Later)
-7. Core functionality
-
-Your roadmap should be:
-
-Phase 1 — API Client
-✓ GET
-✓ POST
-✓ PUT
-✓ PATCH
-✓ DELETE
-
-✓ Query parameters
-✓ Headers
-✓ JSON body
-✓ Form-data
-✓ URL encoded body
-
-✓ Response body
-✓ Response headers
-✓ Status code
-✓ Response time
-✓ Response size
-Phase 2 — Collections
-✓ Workspaces
-
-✓ Collections
-✓ Folders
-✓ Requests
+Before running the project, make sure you have installed:
 
-✓ Rename
-✓ Duplicate
-✓ Delete
-✓ Move
+* Node.js 20+
+* pnpm
+* PostgreSQL
+* Git
+* Docker *(recommended)*
 
-Example:
+Check your versions:
 
-Workspace
-│
-├── Authentication
-│   ├── Login
-│   └── Register
-│
-├── Users
-│   ├── Get Users
-│   ├── Get User
-│   ├── Create User
-│   └── Delete User
-│
-└── Products
-    ├── List Products
-    └── Create Product
-Phase 3 — Environments
-
-Example:
+```bash
+node --version
+pnpm --version
+git --version
+```
 
-Local
+---
 
-BASE_URL=http://localhost:8000/api
-TOKEN=abc123
-
-Staging:
-
-BASE_URL=https://staging.example.com/api
-TOKEN=xyz456
-
-Request:
-
-{{BASE_URL}}/users
-Phase 4 — Authentication
-
-Support:
-
-No Auth
-Bearer Token
-Basic Auth
-API Key
-OAuth 2.0
-
-Start with:
-
-No Auth
-Bearer
-Basic
-API Key
-
-OAuth can come later.
-
-Phase 5 — History
-
-Store executed requests:
-
-GET     /users          200
-POST    /login          200
-GET     /products       200
-DELETE  /products/10    204
-
-Allow:
-
-Run Again
-Save to Collection
-Delete
-Clear History
-Phase 6 — API testing
-
-Example:
-
-GET /users
-
-Tests:
-
-✓ Status code = 200
-✓ Response time < 500ms
-✓ Response contains data
-✓ Response contains user ID
-
-Later create a visual test builder.
-
-Phase 7 — Import/Export
-
-Very important.
-
-Support:
-
-Import Postman Collection
-Export Postman Collection
-
-Also create your own format:
-
-.nuvro.json
-
-Example:
-
-my-api.nuvro.json
-8. Database design
-
-Use PostgreSQL + Prisma.
-
-Initial tables:
-
-users
-workspaces
-workspace_members
-collections
-folders
-requests
-request_headers
-request_parameters
-environments
-environment_variables
-request_history
-test_suites
-test_cases
-
-Core relationship:
-
-User
- │
- └── Workspace
-       │
-       ├── Collections
-       │      └── Folders
-       │            └── Requests
-       │
-       └── Environments
-9. Don't over-normalize request data
-
-For an API client, some request data can be stored as JSON/JSONB.
-
-For example:
-
-{
-  "headers": {
-    "Authorization": "Bearer {{TOKEN}}",
-    "Accept": "application/json"
-  },
-  "query": {
-    "page": "1",
-    "limit": "20"
-  }
-}
-
-PostgreSQL's JSONB is very suitable for this type of flexible API request configuration.
-
-10. API structure
-
-Your Node.js API could eventually look like:
-
-/api/v1
-Authentication
-POST /auth/register
-POST /auth/login
-POST /auth/logout
-POST /auth/refresh
-GET  /auth/me
-Workspaces
-GET    /workspaces
-POST   /workspaces
-GET    /workspaces/:id
-PUT    /workspaces/:id
-DELETE /workspaces/:id
-Collections
-GET    /collections
-POST   /collections
-GET    /collections/:id
-PUT    /collections/:id
-DELETE /collections/:id
-Requests
-GET    /requests/:id
-POST   /requests
-PUT    /requests/:id
-DELETE /requests/:id
-Execute request
-
-This is particularly important:
-
-POST /requests/execute
-
-Your Node.js server receives:
-
-{
-  "method": "GET",
-  "url": "https://api.example.com/users",
-  "headers": {},
-  "query": {}
-}
-
-and executes the external API request.
-
-11. Security
-
-Because this application executes arbitrary URLs, security must be treated as a first-class feature.
-
-Eventually protect against:
-
-SSRF
-Internal network access
-localhost access
-Private IP ranges
-Cloud metadata endpoints
-Malicious redirects
-Request abuse
-Large responses
-Long-running requests
-
-For example, don't blindly allow your server to execute:
-
-http://localhost
-http://127.0.0.1
-http://192.168.x.x
-
-This is particularly important once you deploy the application publicly.
-
-12. Web UI
-
-I recommend a developer-tool style interface.
-
-┌───────────────────────────────────────────────────────────┐
-│ NUVRO API Studio                    Environment   Account │
-├──────────────┬────────────────────────────────────────────┤
-│ Collections  │                                             │
-│              │ GET  https://api.example.com/users         │
-│ 📁 Users     │                                             │
-│   Login      │ Params  Auth  Headers  Body  Tests         │
-│   Profile    │                                             │
-│              │ ┌────────────────────────────────────────┐  │
-│ 📁 Products  │ │ Authorization: Bearer {{TOKEN}}       │  │
-│              │ └────────────────────────────────────────┘  │
-│ 📁 Orders    │                                             │
-│              │                         [ SEND ]             │
-│              ├─────────────────────────────────────────────┤
-│ History      │ Response                                    │
-│              │ 200 OK   142ms                             │
-│              │                                             │
-│              │ {                                           │
-│              │   "success": true,                          │
-│              │   "data": []                                │
-│              │ }                                           │
-└──────────────┴─────────────────────────────────────────────┘
-13. Desktop architecture later
-
-Don't build it now, but reserve:
-
-apps/desktop
-
-Eventually:
-
-apps/
-├── web/
-└── desktop/
-    ├── src/
-    └── src-tauri/
+# 📥 Clone the Repository
 
-Tauri can produce:
+```bash
+git clone https://github.com/NUVRO/nuvro-api-studio.git
+```
 
-Windows
-    .exe / installer
+Enter the project:
 
-macOS
-    .dmg
+```bash
+cd nuvro-api-studio
+```
 
-Linux
-    AppImage / deb
+> Replace the GitHub organization/repository URL if the repository is hosted under a different account.
 
-Your core API Studio functionality can live in:
+---
 
-packages/core
-packages/api-client
-packages/types
-packages/ui
+# 📦 Install Dependencies
 
-so desktop doesn't require rewriting everything.
+```bash
+pnpm install
+```
 
-14. GitHub Actions
+---
 
-Set up CI from the beginning.
+# ⚙️ Environment Configuration
 
-Every Pull Request should eventually run:
+Create your environment file:
 
-Install
-   ↓
-Lint
-   ↓
-Type Check
-   ↓
-Unit Tests
-   ↓
-Build
+```bash
+cp .env.example .env
+```
 
-Example:
+Configure the required values:
 
-.github/workflows/ci.yml
+```env
+NODE_ENV=development
 
-Later add:
+DATABASE_URL="postgresql://postgres:password@localhost:5432/nuvro_api_studio"
 
-Security scan
-E2E tests
-Docker build
-Release
-Desktop builds
-15. GitHub Issues
+API_PORT=4000
 
-Create labels:
+WEB_URL=http://localhost:5173
+```
 
-bug
-feature
-enhancement
-documentation
-good-first-issue
-help-wanted
-frontend
-backend
-database
-security
-testing
-desktop
+Never commit your real `.env` file.
 
-This makes the public repository look much more professional.
+---
 
-16. GitHub Projects
+# 🗄️ Database Setup
 
-Create a project:
+Generate the Prisma client:
 
-NUVRO API Studio Roadmap
+```bash
+pnpm prisma generate
+```
 
-Columns:
+Run migrations:
 
-Backlog
-Ready
-In Progress
-Review
-Testing
-Done
+```bash
+pnpm prisma migrate dev
+```
 
-Create milestones:
+Seed development data if available:
 
-v0.1.0 — Foundation
+```bash
+pnpm prisma db seed
+```
 
-v0.2.0 — API Client
+---
 
-v0.3.0 — Collections
+# ▶️ Run the Development Environment
 
-v0.4.0 — Environments
+Start all applications:
 
-v0.5.0 — Authentication
+```bash
+pnpm dev
+```
 
-v0.6.0 — API Testing
+The development environment will start the required services.
 
-v0.7.0 — Import/Export
+Typical URLs:
 
-v1.0.0 — Production Release
+```text
+Web:
+http://localhost:5173
 
-v1.1.0 — Desktop
-17. README
+Backend:
+http://localhost:4000
+```
 
-Your README should eventually be your project's biggest marketing asset.
+---
 
-Start with:
+# 🐳 Docker
 
-# NUVRO API Studio
+Docker support is planned/provided for simplifying local development.
 
-A modern, open-source API development, testing, and management platform.
+Build the containers:
 
-## 🚀 Features
+```bash
+docker compose build
+```
 
-- API request builder
-- Collections
-- Folders
-- Environments
-- Authentication
-- Request history
-- Response viewer
-- API testing
-- Import/export
-- Team workspaces
+Start services:
 
-## 🛠 Tech Stack
+```bash
+docker compose up -d
+```
 
-### Frontend
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
+Check running containers:
 
-### Backend
-- Node.js
-- Express
-- TypeScript
+```bash
+docker compose ps
+```
 
-### Database
-- PostgreSQL
-- Prisma
+Stop services:
 
-### DevOps
-- Docker
-- GitHub Actions
+```bash
+docker compose down
+```
 
-## 📸 Screenshots
+---
 
-Coming soon.
+# 🧪 Testing
 
-## 🏗 Architecture
+Run unit tests:
 
-Coming soon.
+```bash
+pnpm test
+```
 
-## 🚀 Getting Started
+Run integration tests:
 
-Coming soon.
+```bash
+pnpm test:integration
+```
 
-## 🧪 Testing
+Run end-to-end tests:
 
-Coming soon.
+```bash
+pnpm test:e2e
+```
 
-## 🗺 Roadmap
+---
 
-See GitHub Projects.
+# 🔍 Code Quality
 
-## 🤝 Contributing
+Run ESLint:
+
+```bash
+pnpm lint
+```
+
+Run TypeScript checks:
+
+```bash
+pnpm type-check
+```
+
+Format the project:
+
+```bash
+pnpm format
+```
+
+Build the project:
+
+```bash
+pnpm build
+```
+
+---
+
+# 🔐 Security
+
+NUVRO API Studio is designed to execute requests against external APIs.
+
+Because of this, security is a major part of the architecture.
+
+The project will consider protections against:
+
+* SSRF
+* Localhost access
+* Private network access
+* Internal IP access
+* Cloud metadata endpoints
+* Malicious redirects
+* Excessive response sizes
+* Long-running requests
+* Request abuse
+* Authentication token exposure
+
+If you discover a security vulnerability, please do **not** create a public GitHub issue.
+
+Use the project's security reporting process instead.
+
+---
+
+# 🗺️ Roadmap
+
+## v0.1 — Foundation
+
+* [x] Repository
+* [ ] Monorepo configuration
+* [ ] React application
+* [ ] Node.js backend
+* [ ] PostgreSQL
+* [ ] Prisma
+* [ ] Docker
+* [ ] CI/CD
+
+---
+
+## v0.2 — API Client
+
+* [ ] Request builder
+* [ ] GET
+* [ ] POST
+* [ ] PUT
+* [ ] PATCH
+* [ ] DELETE
+* [ ] Headers
+* [ ] Query parameters
+* [ ] JSON body
+* [ ] Form data
+* [ ] Response viewer
+
+---
+
+## v0.3 — Collections
+
+* [ ] Workspaces
+* [ ] Collections
+* [ ] Folders
+* [ ] Requests
+* [ ] Rename
+* [ ] Duplicate
+* [ ] Delete
+* [ ] Move requests
+
+---
+
+## v0.4 — Environments
+
+* [ ] Environment management
+* [ ] Variables
+* [ ] Variable substitution
+* [ ] Local environment
+* [ ] Staging environment
+* [ ] Production environment
+
+---
+
+## v0.5 — Authentication
+
+* [ ] Bearer token
+* [ ] Basic authentication
+* [ ] API key
+* [ ] OAuth 2.0
+
+---
+
+## v0.6 — History
+
+* [ ] Request history
+* [ ] Re-run request
+* [ ] Save request
+* [ ] Delete history
+* [ ] Clear history
+
+---
+
+## v0.7 — API Testing
+
+* [ ] Test builder
+* [ ] Status assertions
+* [ ] Response assertions
+* [ ] Response-time assertions
+* [ ] JSON assertions
+* [ ] Test suites
+* [ ] Collection runner
+
+---
+
+## v0.8 — Import & Export
+
+* [ ] NUVRO collection format
+* [ ] JSON export
+* [ ] JSON import
+* [ ] Postman import
+* [ ] Postman export
+
+---
+
+## v0.9 — Collaboration
+
+* [ ] User accounts
+* [ ] Workspaces
+* [ ] Workspace members
+* [ ] Roles
+* [ ] Permissions
+* [ ] Team collections
+
+---
+
+## v1.0 — Production Release
+
+* [ ] Production deployment
+* [ ] Documentation
+* [ ] Security audit
+* [ ] Performance optimization
+* [ ] Automated testing
+* [ ] Public release
+
+---
+
+## Future — Desktop Applications
+
+After the web application becomes stable:
+
+### Windows
+
+```text
+NUVRO API Studio.exe
+```
+
+### macOS
+
+```text
+NUVRO API Studio.dmg
+```
+
+### Linux
+
+```text
+NUVRO API Studio.AppImage
+```
+
+Desktop applications will be built using **Tauri** and will reuse the project's shared core functionality.
+
+---
+
+# 🤝 Contributing
 
 Contributions are welcome.
 
-## 📄 License
+Before contributing:
 
-MIT
-18. License
-
-If your goal is public GitHub + portfolio + open-source contributions, I'd initially choose:
-
-MIT License
-
-It is simple and permissive.
-
-You can later reconsider licensing if NUVRO API Studio becomes a commercial product.
-
-19. Git branches
-
-Don't work directly on main.
-
-Use:
-
-main
-develop
-feature/*
-fix/*
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Add or update tests.
+5. Run linting and type checks.
+6. Commit your changes.
+7. Open a Pull Request.
 
 Example:
 
-feature/api-request-builder
-feature/collections
-feature/environments
-fix/request-timeout
+```bash
+git checkout -b feature/api-request-builder
+```
 
-Flow:
+Make your changes and commit:
 
-feature
-   ↓
-develop
-   ↓
+```bash
+git add .
+git commit -m "feat: add API request builder"
+```
+
+Push your branch:
+
+```bash
+git push origin feature/api-request-builder
+```
+
+Then create a Pull Request.
+
+---
+
+# 🌿 Branch Strategy
+
+The project uses the following branch strategy:
+
+```text
 main
-20. Commit convention
+  │
+  └── develop
+       │
+       ├── feature/*
+       ├── fix/*
+       ├── refactor/*
+       └── docs/*
+```
 
-Use conventional commits:
+### Main
 
+Stable production-ready code.
+
+### Develop
+
+Integration branch for upcoming releases.
+
+### Feature
+
+New functionality.
+
+Example:
+
+```text
+feature/collections
+feature/api-testing
+feature/environments
+```
+
+### Fix
+
+Bug fixes.
+
+Example:
+
+```text
+fix/request-timeout
+fix/response-parser
+```
+
+---
+
+# 📝 Commit Convention
+
+NUVRO API Studio follows Conventional Commits.
+
+Examples:
+
+```text
 feat: add API request builder
-
 feat: add collection management
 
 fix: handle request timeout
+fix: resolve response parsing issue
 
 refactor: improve request execution service
 
-docs: update installation guide
-
 test: add collection service tests
 
+docs: update installation guide
+
 chore: update dependencies
+```
 
-This will also make your GitHub history look professional.
+---
 
-21. Your first development milestone
+# 📄 License
 
-Don't start by implementing everything above.
+NUVRO API Studio is released under the **MIT License**.
 
-Start with:
+See the [LICENSE](LICENSE) file for details.
 
-NUVRO API Studio v0.1.0
-Step 1
+---
 
-Create:
+# 👨‍💻 Author
 
-nuvro-api-studio
-Step 2
+**NUVRO**
 
-Initialize:
+Technology Partner & Software Development Company
 
-pnpm
-Turborepo
-TypeScript
-Step 3
+Website: https://nuvrotech.in
 
-Create:
+---
 
-apps/web
-backend
-packages/types
-packages/core
-packages/api-client
-packages/ui
-database
-Step 4
+# ⭐ Support the Project
 
-Get React running.
+If you find NUVRO API Studio useful:
 
-Step 5
+* ⭐ Star the repository
+* 🐛 Report bugs
+* 💡 Suggest features
+* 🔧 Submit Pull Requests
+* 📢 Share the project with other developers
 
-Get Node.js API running.
+Every contribution helps improve the project.
 
-Step 6
+---
 
-Connect:
+# 📌 Project Goals
 
-React → Node.js
-Step 7
+NUVRO API Studio is being developed with the following goals:
 
-Connect:
+```text
+Simple
+    ↓
+Powerful
+    ↓
+Developer Friendly
+    ↓
+Open Source
+    ↓
+Cross Platform
+```
 
-Node.js → PostgreSQL
-Step 8
+The long-term goal is to provide developers with a modern API workspace that can be used from the **browser, Windows, macOS, and Linux**.
 
-Build the first feature:
+---
 
-API Request Builder
-Step 9
+## 🚀 NUVRO API Studio
 
-Implement:
+**Build APIs. Test APIs. Understand APIs.**
 
-GET
-POST
-PUT
-PATCH
-DELETE
-Step 10
-
-Add response viewer.
-
-At that point you have your first working NUVRO API Studio MVP.
-
-The most important principle
-
-Don't build NUVRO API Studio as:
-
-React frontend
-+
-Node backend
-+
-some Postman-like screens
-
-Build it as a real product from the beginning:
-
-                 NUVRO API STUDIO
-                        │
-         ┌──────────────┴──────────────┐
-         │                             │
-       Web                         Desktop
-    (NOW)                         (LATER)
-         │                             │
-         └──────────────┬──────────────┘
-                        │
-                 Shared Core
-                        │
-          ┌─────────────┼─────────────┐
-          │             │             │
-      API Client      Types          UI
-          │
-          ▼
-       Node.js
-          │
-          ▼
-     PostgreSQL
+Built with ❤️ by NUVRO.
