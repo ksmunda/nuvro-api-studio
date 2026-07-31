@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { authRouter } from './auth.js';
+import { requestsRouter } from './requests.js';
 
 export const router: Router = Router();
 
@@ -30,10 +32,8 @@ router.get('/health/database', async (_req, res, next) => {
   }
 });
 
-// Stubs for future Phase 3+ feature endpoints under /api/v1/...
-router.use('/auth', (_req, res) => {
-  res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Auth routes not yet implemented' } });
-});
+// Authentication routes: /api/v1/auth
+router.use('/auth', authRouter);
 
 router.use('/workspaces', (_req, res) => {
   res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Workspace routes not yet implemented' } });
@@ -43,9 +43,8 @@ router.use('/collections', (_req, res) => {
   res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Collection routes not yet implemented' } });
 });
 
-router.use('/requests', (_req, res) => {
-  res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Request execution routes not yet implemented' } });
-});
+// Request execution routes: /api/v1/requests
+router.use('/requests', requestsRouter);
 
 router.use('/environments', (_req, res) => {
   res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Environment routes not yet implemented' } });

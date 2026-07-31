@@ -38,8 +38,8 @@ export class FetchTransport implements ApiTransport {
         throw new Error(`Proxy error ${response.status}: ${errorBody}`);
       }
 
-      const data = (await response.json()) as ExecuteResponse;
-      return data;
+      const payload = await response.json();
+      return payload.data as ExecuteResponse;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Request was cancelled or timed out');

@@ -17,7 +17,7 @@
  */
 
 // Environment variable interpolation engine
-export { interpolateVariables, extractVariableNames } from './interpolation/index.js';
+export { interpolateVariables, interpolateVariablesStrict, extractVariableNames } from './interpolation/index.js';
 
 // Request lifecycle state machine
 export {

@@ -31,6 +31,22 @@ export function interpolateVariables(
 }
 
 /**
+ * Replaces all {{variableName}} tokens in the input string, throwing an error if any variables are missing.
+ */
+export function interpolateVariablesStrict(
+  input: string,
+  variables: Record<string, string>,
+): string {
+  return input.replace(VARIABLE_PATTERN, (match, key: string) => {
+    const trimmedKey = key.trim();
+    if (!Object.prototype.hasOwnProperty.call(variables, trimmedKey)) {
+      throw new Error(`Environment variable "${trimmedKey}" was not found.`);
+    }
+    return variables[trimmedKey] ?? '';
+  });
+}
+
+/**
  * Extracts all unique variable names referenced in the input string.
  *
  * @example

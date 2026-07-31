@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../errors/app-error.js';
@@ -10,16 +11,17 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   // 1. Centralised console log (uses req.id for tracing)
-  console.error(`[Error] Request ID: ${req.id ?? 'N/A'}`, err);
+  console.error(`[Error] Request ID: ${req.id ?? 'N/A'} - ${err instanceof Error ? err.stack : String(err)}`);
 
   // 2. Handle Zod validation errors
-  if (err instanceof ZodError) {
+  if (err instanceof ZodError || (err instanceof Error && err.name === 'ZodError')) {
+    const zodErr = err as any;
     res.status(400).json({
       success: false,
       error: {
         code: 'VALIDATION_ERROR',
         message: 'Invalid request data',
-        details: err.flatten().fieldErrors,
+        details: typeof zodErr.flatten === 'function' ? zodErr.flatten().fieldErrors : zodErr.message,
         requestId: req.id,
       },
     });

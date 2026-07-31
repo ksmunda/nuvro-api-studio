@@ -7,6 +7,8 @@ import { rateLimit } from 'express-rate-limit';
 import { env } from './config/env.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
 import { requestLogger } from './middleware/logger.js';
+import cookieParser from 'cookie-parser';
+import { authenticate } from './middleware/auth.js';
 import { router as apiV1Router } from './routes/index.js';
 import { notFoundHandler } from './middleware/not-found.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -61,6 +63,8 @@ app.use(requestLogger);
 // 5. Payload size restrictions (safe parsing)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser(env.SESSION_SECRET));
+app.use(authenticate);
 app.use(compression());
 
 // 6. Base /api/v1 routes

@@ -18,6 +18,7 @@ if (process.env['NODE_ENV'] !== 'production') {
 export type {
   PrismaClient,
   User,
+  RefreshToken,
   Workspace,
   WorkspaceMember,
   WorkspaceRole,
