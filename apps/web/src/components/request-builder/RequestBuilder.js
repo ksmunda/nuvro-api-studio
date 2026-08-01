@@ -1,0 +1,69 @@
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useState } from 'react';
+import { MethodSelector } from './MethodSelector.js';
+import { RequestUrlBar } from './RequestUrlBar.js';
+import { SendButton } from './SendButton.js';
+import { RequestTabs } from './RequestTabs.js';
+import { ParamsEditor } from './ParamsEditor.js';
+import { AuthorizationEditor } from './AuthorizationEditor.js';
+import { HeadersEditor } from './HeadersEditor.js';
+import { BodyEditor } from './BodyEditor.js';
+import { useRequestStore } from '../../store/request-store.js';
+import { useCollectionStore } from '../../store/collection-store.js';
+export function RequestBuilder() {
+    const { activeTab, sendRequest, method, url, headers, queryParams, authType, authConfig, bodyType, bodyContent } = useRequestStore();
+    const { activeRequest, collections, isSaving, isDirty, updateRequest, createRequest, } = useCollectionStore();
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [saveData, setSaveData] = useState({ name: 'New Request', collectionId: '', folderId: null });
+    const dirty = isDirty();
+    const handleSave = async () => {
+        if (activeRequest) {
+            // Update existing
+            await updateRequest(activeRequest.id, {
+                method,
+                url,
+                headers: headers.filter(h => h.key.trim()),
+                queryParams: queryParams.filter(p => p.key.trim()),
+                authType,
+                authConfig: authConfig,
+                bodyType,
+                bodyContent: bodyContent || null,
+            });
+        }
+        else {
+            // First save — open dialog
+            if (collections.length === 0) {
+                window.alert('Create a collection first before saving a request.');
+                return;
+            }
+            setSaveData({ name: 'New Request', collectionId: collections[0]?.id ?? '', folderId: null });
+            setShowSaveDialog(true);
+        }
+    };
+    const handleSaveNew = async () => {
+        if (!saveData.name.trim() || !saveData.collectionId)
+            return;
+        await createRequest(saveData.collectionId, saveData.name.trim(), method, url, saveData.folderId);
+        setShowSaveDialog(false);
+    };
+    const renderActiveEditor = () => {
+        switch (activeTab) {
+            case 'params':
+                return _jsx(ParamsEditor, {});
+            case 'auth':
+                return _jsx(AuthorizationEditor, {});
+            case 'headers':
+                return _jsx(HeadersEditor, {});
+            case 'body':
+                return _jsx(BodyEditor, {});
+            default:
+                return null;
+        }
+    };
+    return (_jsxs("div", { className: "bg-surface-900 border border-surface-800 rounded-xl p-4 md:p-6 shadow-xl space-y-6", children: [_jsxs("div", { className: "flex items-center gap-0", children: [_jsx(MethodSelector, {}), _jsx(RequestUrlBar, { onSend: sendRequest }), _jsxs("div", { className: "ml-3 flex items-center gap-2", children: [_jsx(SendButton, { onSend: sendRequest }), _jsxs("button", { type: "button", id: "save-request-btn", onClick: handleSave, disabled: isSaving, className: `inline-flex items-center gap-1.5 px-4 py-2.5 rounded-r-xl text-xs font-bold transition-all border ${dirty && activeRequest
+                                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+                                    : 'bg-surface-800 border-surface-700 text-surface-300 hover:bg-surface-700 hover:text-surface-100'} disabled:opacity-50`, children: [_jsx("svg", { className: "w-3.5 h-3.5", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2, children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 3.75 3.75 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" }) }), isSaving ? 'Saving...' : (dirty && activeRequest ? 'Save *' : 'Save')] })] })] }), activeRequest && (_jsxs("div", { className: "flex items-center gap-2 -mt-3", children: [_jsxs("div", { className: "flex items-center gap-1.5 bg-surface-800/60 border border-surface-800 rounded-lg px-2.5 py-1", children: [_jsx("svg", { className: "w-3 h-3 text-brand-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2, children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" }) }), _jsxs("span", { className: "text-xs text-surface-300 font-medium", children: [activeRequest.name, dirty && _jsx("span", { className: "text-amber-400 ml-1 font-bold", children: "*" })] })] }), dirty && (_jsx("span", { className: "text-xs text-amber-400/80 font-medium", children: "Unsaved changes" }))] })), _jsx(RequestTabs, {}), _jsx("div", { className: "bg-surface-950/40 border border-surface-800/40 rounded-xl p-4 min-h-[300px]", children: renderActiveEditor() }), showSaveDialog && (_jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-surface-950/80 backdrop-blur-sm", children: _jsxs("div", { className: "bg-surface-900 border border-surface-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl mx-4", children: [_jsx("h3", { className: "text-base font-bold text-surface-100 mb-4", children: "Save Request" }), _jsx("label", { className: "block text-xs font-semibold text-surface-400 mb-1.5", children: "Request Name" }), _jsx("input", { autoFocus: true, value: saveData.name, onChange: (e) => setSaveData((d) => ({ ...d, name: e.target.value })), onKeyDown: (e) => { if (e.key === 'Enter')
+                                handleSaveNew(); if (e.key === 'Escape')
+                                setShowSaveDialog(false); }, placeholder: "e.g. Get Users", className: "w-full bg-surface-800 border border-surface-700 text-surface-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 mb-3" }), _jsx("label", { className: "block text-xs font-semibold text-surface-400 mb-1.5", children: "Collection" }), _jsx("select", { value: saveData.collectionId, onChange: (e) => setSaveData((d) => ({ ...d, collectionId: e.target.value, folderId: null })), className: "w-full bg-surface-800 border border-surface-700 text-surface-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 mb-3", children: collections.map((c) => _jsx("option", { value: c.id, children: c.name }, c.id)) }), saveData.collectionId && (_jsxs(_Fragment, { children: [_jsxs("label", { className: "block text-xs font-semibold text-surface-400 mb-1.5", children: ["Folder ", _jsx("span", { className: "font-normal text-surface-600", children: "(optional)" })] }), _jsxs("select", { value: saveData.folderId ?? '', onChange: (e) => setSaveData((d) => ({ ...d, folderId: e.target.value || null })), className: "w-full bg-surface-800 border border-surface-700 text-surface-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 mb-4", children: [_jsx("option", { value: "", children: "None (root)" }), (collections.find(c => c.id === saveData.collectionId)?.folders ?? []).map((f) => (_jsx("option", { value: f.id, children: f.name }, f.id)))] })] })), _jsxs("div", { className: "flex gap-2 justify-end", children: [_jsx("button", { type: "button", className: "text-xs px-4 py-2 rounded-lg border border-surface-700 text-surface-400 hover:text-surface-200", onClick: () => setShowSaveDialog(false), children: "Cancel" }), _jsx("button", { type: "button", className: "text-xs px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold disabled:opacity-50 transition-all", disabled: !saveData.name.trim() || !saveData.collectionId || isSaving, onClick: handleSaveNew, children: isSaving ? 'Saving...' : 'Save' })] })] }) }))] }));
+}
+//# sourceMappingURL=RequestBuilder.js.map

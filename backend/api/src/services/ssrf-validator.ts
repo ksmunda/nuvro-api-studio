@@ -90,9 +90,11 @@ export async function validateUrlForSsrf(urlStr: string): Promise<string> {
   }
 
   // Ensure ALL resolved IPs are public
-  for (const ip of resolvedIps) {
-    if (isPrivateIp(ip)) {
-      throw new BadRequestError(`Unsafe destination address resolved: target "${hostname}" resolves to private IP range (${ip})`, 'BLOCKED_SSRF');
+  if (process.env['ALLOW_PRIVATE_IPS'] !== 'true') {
+    for (const ip of resolvedIps) {
+      if (isPrivateIp(ip)) {
+        throw new BadRequestError(`Unsafe destination address resolved: target "${hostname}" resolves to private IP range (${ip})`, 'BLOCKED_SSRF');
+      }
     }
   }
 

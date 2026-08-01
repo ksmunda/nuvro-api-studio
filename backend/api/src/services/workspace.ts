@@ -18,6 +18,10 @@ export class WorkspaceService {
     return workspace;
   }
 
+  async getUserWorkspaces(userId: string): Promise<Workspace[]> {
+    return await workspaceRepository.findUserWorkspaces(userId);
+  }
+
   async createWorkspace(data: { name: string; slug: string; description?: string; ownerId: string }): Promise<Workspace> {
     const owner = await userRepository.findById(data.ownerId);
     if (!owner) {

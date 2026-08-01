@@ -40,8 +40,14 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-surface-950 px-4">
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-surface-800 bg-surface-900/50 p-8 shadow-xl backdrop-blur-md">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-brand-400">Welcome Back</h2>
-          <p className="mt-2 text-sm text-surface-400">Sign in to your NUVRO account</p>
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="h-7 w-7 rounded-lg bg-brand-500 flex items-center justify-center font-black text-surface-950 text-xs shadow-glow-brand tracking-tighter select-none">
+              NV
+            </div>
+            <h1 className="font-extrabold text-base tracking-tight text-surface-200">NUVRO <span className="font-light text-surface-450">API Studio</span></h1>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-400">Welcome Back</h2>
+          <p className="mt-1.5 text-xs text-surface-400">Sign in to your NUVRO account</p>
         </div>
 
         {error && (

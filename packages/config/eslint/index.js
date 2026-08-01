@@ -45,6 +45,9 @@ export const baseConfig = [
         TextDecoder: 'readonly',
         RequestInit: 'readonly',
         FormData: 'readonly',
+        window: 'readonly',
+        navigator: 'readonly',
+        HTMLInputElement: 'readonly',
       },
     },
     rules: {

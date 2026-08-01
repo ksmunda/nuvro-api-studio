@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { cuidSchema } from './common.js';
+import { apiRequestSchema } from './request.js';
 
 export const createCollectionSchema = z.object({
   name: z
@@ -73,6 +74,7 @@ export const collectionSchema = z.object({
 
 export const collectionDetailSchema = collectionSchema.extend({
   folders: z.array(folderSchema),
+  requests: z.array(apiRequestSchema).default([]),
 });
 
 export type CreateCollectionInput = z.infer<typeof createCollectionSchema>;
