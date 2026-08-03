@@ -18,4 +18,5 @@
 export { ApiClient } from './client.js';
 export { FetchTransport } from './transports/fetch.js';
 export { CollectionsClient } from './collections-client.js';
+export { EnvironmentsClient } from './environments-client.js';
 export type { ApiTransport, ApiClientOptions, RequestResult } from './types.js';

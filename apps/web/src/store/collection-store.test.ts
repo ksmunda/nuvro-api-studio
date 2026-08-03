@@ -30,11 +30,16 @@ vi.mock('@nuvro/api-client', () => {
 
   const ApiClientClass = vi.fn();
   const FetchTransportClass = vi.fn();
+  const EnvironmentsClientClass = vi.fn().mockImplementation(() => ({
+    getEnvironments: vi.fn().mockResolvedValue([]),
+    getEnvironmentDetail: vi.fn().mockResolvedValue({ id: 'env_123', variables: [] }),
+  }));
 
   return {
     CollectionsClient: CollectionsClientClass,
     ApiClient: ApiClientClass,
     FetchTransport: FetchTransportClass,
+    EnvironmentsClient: EnvironmentsClientClass,
   };
 });
 

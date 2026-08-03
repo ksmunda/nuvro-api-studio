@@ -4,9 +4,13 @@ import { RequestBuilder } from '../components/request-builder/RequestBuilder.js'
 import { ResponseViewer } from '../components/response-viewer/ResponseViewer.js';
 import { CollectionSidebar } from '../components/sidebar/CollectionSidebar.js';
 
+import { EnvironmentSelector } from '../components/environments/EnvironmentSelector.js';
+import { EnvironmentModal } from '../components/environments/EnvironmentModal.js';
+
 export function StudioPage() {
   const { user, logout } = useAuthStore();
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [isEnvModalOpen, setIsEnvModalOpen] = useState(false);
 
   // Fetch the first workspace on mount (the user's default workspace)
   useEffect(() => {
@@ -26,37 +30,52 @@ export function StudioPage() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface-950 text-surface-100 font-sans">
+    <div className="flex flex-col min-h-screen bg-surface-950 text-surface-100 font-sans relative overflow-hidden select-none">
+      {/* Subtle ambient light sources for premium dark theme */}
+      <div className="absolute top-[-30%] left-[10%] w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[-30%] right-[10%] w-[600px] h-[600px] bg-accent-500/5 rounded-full blur-[140px] pointer-events-none" />
+
       {/* Top Navbar Header */}
-      <header className="border-b border-surface-900 bg-surface-950/70 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-surface-900/80 bg-surface-950/65 backdrop-blur-xl sticky top-0 z-50 transition-all shrink-0">
         <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Branding Logo Icon */}
-            <div className="h-7 w-7 rounded-lg bg-brand-500 flex items-center justify-center font-black text-surface-950 text-xs shadow-glow-brand tracking-tighter select-none">
+            <div className="h-8 w-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-surface-950 text-sm shadow-glow-brand tracking-tighter select-none">
               NV
             </div>
-            <h1 className="font-extrabold text-base tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-accent-400 bg-clip-text text-transparent">NUVRO <span className="font-light text-surface-300">API Studio</span></h1>
+            <h1 className="font-extrabold text-base tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-accent-400 bg-clip-text text-transparent mr-4 select-none">
+              NUVRO <span className="font-light text-surface-300">API Studio</span>
+            </h1>
+            {workspaceId && (
+              <EnvironmentSelector
+                workspaceId={workspaceId}
+                onManageClick={() => setIsEnvModalOpen(true)}
+              />
+            )}
           </div>
 
           <div className="flex items-center gap-4">
             {/* User Details */}
-            <div className="text-right hidden sm:block text-xs text-surface-400 font-semibold uppercase tracking-wider">
-              Logged in as <span className="text-sm font-bold text-surface-200 block normal-case tracking-normal">{user?.username}</span>
+            <div className="text-right hidden sm:block text-[10px] font-bold text-surface-450 uppercase tracking-widest">
+              Logged in as{' '}
+              <span className="text-xs font-bold text-surface-200 block normal-case tracking-normal mt-0.5">
+                {user?.username}
+              </span>
             </div>
 
             {/* Logout Action Button */}
             <button
               onClick={() => logout()}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-surface-900 hover:bg-surface-800 border border-surface-800 text-surface-300 hover:text-surface-100 px-3.5 py-1.5 text-xs font-bold transition-all"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-surface-900/60 hover:bg-surface-800 border border-surface-800/80 text-surface-350 hover:text-surface-100 px-3.5 py-1.5 text-xs font-bold transition-all active:scale-[0.98] outline-none focus:border-brand-500/50"
               aria-label="Logout button"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 stroke="currentColor"
-                className="w-4 h-4"
+                className="w-3.5 h-3.5"
               >
                 <path
                   strokeLinecap="round"
@@ -71,23 +90,31 @@ export function StudioPage() {
       </header>
 
       {/* Main Studio Layout: Sidebar + Content */}
-      <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
+      <div className="flex flex-1 overflow-hidden relative z-10" style={{ height: 'calc(100vh - 56px)' }}>
         {/* Left Sidebar */}
-        {workspaceId && (
-          <CollectionSidebar workspaceId={workspaceId} />
-        )}
+        {workspaceId && <CollectionSidebar workspaceId={workspaceId} />}
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
-          <RequestBuilder />
-          <ResponseViewer />
+        <main className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-surface-950/20">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <RequestBuilder />
+            <ResponseViewer />
+          </div>
         </main>
       </div>
 
       {/* Footer Branding Info */}
-      <footer className="border-t border-surface-900/60 py-3 text-center text-xs text-surface-500">
-        &copy; {new Date().getFullYear()} NUVRO API Studio. Framework-agnostic design model.
+      <footer className="border-t border-surface-900/40 py-2.5 text-center text-[10px] font-medium text-surface-500 bg-surface-950/60 relative z-20 shrink-0 uppercase tracking-widest select-none">
+        &copy; {new Date().getFullYear()} NUVRO API Studio. Premium Developer Experience.
       </footer>
+
+      {workspaceId && (
+        <EnvironmentModal
+          workspaceId={workspaceId}
+          isOpen={isEnvModalOpen}
+          onClose={() => setIsEnvModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

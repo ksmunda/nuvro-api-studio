@@ -33,6 +33,7 @@ services:
       DATABASE_URL: postgresql://nuvro:nuvro_dev_password@postgres:5432/nuvro_dev
       PORT: 4000
       CORS_ORIGIN: http://localhost:5173
+      ALLOW_PRIVATE_IPS: "true"
     ports:
       - '4000:4000'
     volumes:
@@ -50,9 +51,9 @@ services:
     depends_on:
       - api
     environment:
-      VITE_API_BASE_URL: http://localhost:4000/api
+      VITE_API_BASE_URL: http://localhost:4000/api/v1
     ports:
-      - '5173:5173'
+      - '5173:80'
     volumes:
       - ./apps/web:/app/apps/web
       - ./packages:/app/packages

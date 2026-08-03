@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { ApiClient, FetchTransport } from '@nuvro/api-client';
 import type { HttpMethod, AuthType, BodyType, KeyValuePair, ExecuteResponse, ExecuteRequestInput } from '@nuvro/types';
+import { useEnvironmentStore } from './environment-store.js';
 
 // Centralised API client instance using the FetchTransport proxy endpoint
 const transport = new FetchTransport('/api/v1/requests/execute');
@@ -92,7 +93,8 @@ export const useRequestStore = create<RequestState>((set, get) => ({
     const cleanHeaders = state.headers.filter((h) => h.key.trim() !== '');
 
     // Formulate ExecuteRequestInput payload
-    const requestInput: ExecuteRequestInput = {
+    const environmentId = useEnvironmentStore.getState().activeEnvironmentId;
+    const requestInput: ExecuteRequestInput & { environmentId?: string } = {
       method: state.method,
       url: state.url,
       headers: cleanHeaders,
@@ -102,6 +104,7 @@ export const useRequestStore = create<RequestState>((set, get) => ({
       bodyType: state.bodyType,
       bodyContent: state.bodyContent || undefined,
       variables: state.variables,
+      environmentId: environmentId || undefined,
       timeoutMs: state.timeoutMs,
     };
 

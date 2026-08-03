@@ -9,6 +9,7 @@ import { HeadersEditor } from './HeadersEditor.js';
 import { BodyEditor } from './BodyEditor.js';
 import { useRequestStore } from '../../store/request-store.js';
 import { useCollectionStore } from '../../store/collection-store.js';
+import { useEnvironmentStore } from '../../store/environment-store.js';
 
 export function RequestBuilder() {
   const { activeTab, sendRequest, method, url, headers, queryParams, authType, authConfig, bodyType, bodyContent } = useRequestStore();
@@ -21,12 +22,34 @@ export function RequestBuilder() {
     createRequest,
   } = useCollectionStore();
 
+  const activeEnvDetail = useEnvironmentStore((s) => s.activeEnvironmentDetail);
+
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveData, setSaveData] = useState<{
     name: string;
     collectionId: string;
     folderId: string | null;
   }>({ name: 'New Request', collectionId: '', folderId: null });
+
+  const getResolvedUrlPreview = () => {
+    if (!url.includes('{{')) return null;
+    let resolved = url;
+    const vars = activeEnvDetail?.variables || [];
+    const varMap: Record<string, string> = {};
+    for (const v of vars) {
+      if (v.enabled) {
+        varMap[v.key] = v.isSecret ? '••••••••••••' : v.value;
+      }
+    }
+    
+    // Replace tokens
+    resolved = resolved.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+      const trimmed = key.trim();
+      return varMap[trimmed] !== undefined ? varMap[trimmed] : match;
+    });
+    
+    return resolved;
+  };
 
   const dirty = isDirty();
 
@@ -109,6 +132,17 @@ export function RequestBuilder() {
           </button>
         </div>
       </div>
+
+      {/* Resolved URL Preview */}
+      {(() => {
+        const preview = getResolvedUrlPreview();
+        return preview ? (
+          <div className="text-[11px] text-surface-500 font-mono -mt-4 bg-surface-950/45 px-3.5 py-2 rounded-lg border border-surface-800/40 truncate">
+            <span className="text-brand-400/80 font-bold select-none mr-2 uppercase tracking-wide">Resolved URL Preview:</span>
+            <span className="text-surface-300">{preview}</span>
+          </div>
+        ) : null;
+      })()}
 
       {/* Active Request Context Badge */}
       {activeRequest && (

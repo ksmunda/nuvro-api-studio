@@ -15,7 +15,7 @@ requestsRouter.post(
   validate({ body: executeRequestSchema }),
   async (req, res, next) => {
     try {
-      const response = await requestExecutionService.execute(req.body);
+      const response = await requestExecutionService.execute(req.body, req.user!.id);
       res.status(200).json({
         success: true,
         data: response,

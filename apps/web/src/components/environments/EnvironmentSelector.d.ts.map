@@ -1,0 +1,1 @@
+{"version":3,"file":"EnvironmentSelector.d.ts","sourceRoot":"","sources":["EnvironmentSelector.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAsC,MAAM,OAAO,CAAC;AAG3D,UAAU,wBAAwB;IAChC,WAAW,EAAE,MAAM,CAAC;IACpB,aAAa,EAAE,MAAM,IAAI,CAAC;CAC3B;AAED,wBAAgB,mBAAmB,CAAC,EAAE,WAAW,EAAE,aAAa,EAAE,EAAE,wBAAwB,qBA4G3F"}

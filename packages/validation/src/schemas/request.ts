@@ -119,6 +119,7 @@ export const executeRequestSchema = z.object({
   bodyType: bodyTypeSchema.default('NONE'),
   bodyContent: z.string().optional(),
   variables: z.record(z.string()).default({}),
+  environmentId: cuidSchema.optional(),
   timeoutMs: z.number().int().positive().max(30_000).default(10_000),
 });
 

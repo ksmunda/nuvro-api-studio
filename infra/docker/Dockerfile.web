@@ -7,10 +7,13 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
 COPY packages/config/package.json ./packages/config/
 COPY packages/types/package.json ./packages/types/
 COPY packages/validation/package.json ./packages/validation/
-COPY packages/ui/package.json ./packages/ui/
 COPY packages/core/package.json ./packages/core/
 COPY packages/api-client/package.json ./packages/api-client/
+COPY packages/ui/package.json ./packages/ui/
+COPY backend/api/package.json ./backend/api/
+COPY database/prisma/package.json ./database/prisma/
 COPY apps/web/package.json ./apps/web/
+COPY tests/e2e/package.json ./tests/e2e/
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder

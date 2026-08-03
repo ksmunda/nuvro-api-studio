@@ -3,6 +3,7 @@ import { validateUrlForSsrf } from './ssrf-validator.js';
 import { interpolateVariablesStrict } from '@nuvro/core';
 import { env } from '../config/env.js';
 import { BadRequestError } from '../errors/app-error.js';
+import { environmentService } from './environment.js';
 
 /** Safely extracts a message string from an unknown thrown value. */
 function getErrorMessage(err: unknown): string {
@@ -14,8 +15,20 @@ export class RequestExecutionService {
   /**
    * Orchestrates the variable interpolation, safety validation, and execution of outbound HTTP requests.
    */
-  async execute(requestInput: ExecuteRequestInput): Promise<ExecuteResponse> {
-    const vars = requestInput.variables || {};
+  async execute(requestInput: ExecuteRequestInput, userId?: string): Promise<ExecuteResponse> {
+    let vars = { ...(requestInput.variables || {}) };
+
+    if (requestInput.environmentId) {
+      if (!userId) {
+        throw new BadRequestError('User ID is required when environmentId is specified', 'ENVIRONMENT_ERROR');
+      }
+      try {
+        const envVars = await environmentService.getRawVariablesMap(requestInput.environmentId, userId);
+        vars = { ...envVars, ...vars };
+      } catch (err) {
+        throw new BadRequestError(`Failed to load environment: ${getErrorMessage(err)}`, 'ENVIRONMENT_ERROR');
+      }
+    }
 
     // 1. Variable Interpolation
     let interpolatedUrl = '';
