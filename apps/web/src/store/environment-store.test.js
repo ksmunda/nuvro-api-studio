@@ -14,8 +14,9 @@ const mockLocalStorage = {
         Object.keys(mockStorage).forEach((key) => delete mockStorage[key]);
     }),
 };
-global.window = {
+globalThis.window = {
     localStorage: mockLocalStorage,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 };
 // Mock EnvironmentsClient
 vi.mock('@nuvro/api-client', () => {
@@ -45,6 +46,7 @@ import { EnvironmentsClient } from '@nuvro/api-client';
 describe('useEnvironmentStore Unit Tests', () => {
     const mockWorkspaceId = 'ws_123';
     const mockEnvId = 'env_123';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const clientInstance = new EnvironmentsClient();
     beforeEach(() => {
         // Reset Zustand store state

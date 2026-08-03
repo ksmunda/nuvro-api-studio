@@ -145,6 +145,7 @@ export const useEnvironmentStore = create((set, get) => ({
     updateVariable: async (environmentId, variableId, updates) => {
         set({ isSaving: true, error: null });
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await client.updateVariable(variableId, updates);
             // Reload environment detail if active
             if (get().activeEnvironmentId === environmentId) {
