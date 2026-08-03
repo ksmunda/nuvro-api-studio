@@ -60,7 +60,7 @@ jobs:
         run: pnpm type-check
 
   test:
-    name: Unit Tests
+    name: Unit & E2E Tests
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
     steps:
@@ -85,6 +85,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm --filter @nuvro/database db:generate
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @nuvro/e2e exec playwright install --with-deps
 
       - name: Build
         run: pnpm build
