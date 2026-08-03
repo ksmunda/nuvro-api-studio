@@ -39,6 +39,8 @@ export const keyValuePairSchema = z.object({
   value: z.string(),
   description: z.string().optional(),
   enabled: z.boolean().default(true),
+  filename: z.string().optional(),
+  fileContent: z.string().optional(),
 });
 
 export const basicAuthConfigSchema = z.object({

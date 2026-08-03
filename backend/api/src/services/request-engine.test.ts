@@ -663,4 +663,149 @@ describe('RequestExecutionService', () => {
       expect(result.statusCode).toBe(200);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Body Types and Formats Serialization Tests
+  // -------------------------------------------------------------------------
+  describe('body types serialization', () => {
+    it('serializes JSON bodies with default content-type', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'JSON',
+        bodyContent: '{"a": 1}',
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.body).toBe('{"a": 1}');
+      expect(opts.headers['Content-Type']).toBe('application/json');
+    });
+
+    it('serializes RAW text bodies with default content-type', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'RAW',
+        bodyContent: 'hello world',
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.body).toBe('hello world');
+      expect(opts.headers['Content-Type']).toBe('text/plain');
+    });
+
+    it('serializes FORM_URL_ENCODED bodies from KeyValuePair arrays', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'FORM_URL_ENCODED',
+        bodyContent: JSON.stringify([
+          { key: 'foo', value: 'bar', enabled: true },
+          { key: 'baz', value: 'qux', enabled: true },
+          { key: 'ignored', value: 'val', enabled: false },
+        ]),
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.body).toBe('foo=bar&baz=qux');
+      expect(opts.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+    });
+
+    it('serializes FORM_DATA multipart bodies and omits content-type for boundary generation', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'FORM_DATA',
+        bodyContent: JSON.stringify([
+          { key: 'name', value: 'John', enabled: true },
+          { key: 'file', filename: 'test.txt', fileContent: Buffer.from('file-text').toString('base64'), enabled: true },
+        ]),
+        headers: [{ key: 'Content-Type', value: 'multipart/form-data', enabled: true }],
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.body).toBeInstanceOf(FormData);
+      expect(opts.headers['Content-Type']).toBeUndefined();
+      expect(opts.headers['content-type']).toBeUndefined();
+    });
+
+    it('serializes BINARY bodies from base64 content', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const binaryContent = JSON.stringify({
+        filename: 'data.bin',
+        fileContent: Buffer.from('binary-data').toString('base64'),
+      });
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'BINARY',
+        bodyContent: binaryContent,
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.body).toBeInstanceOf(Buffer);
+      expect(opts.body.toString()).toBe('binary-data');
+      expect(opts.headers['Content-Type']).toBe('application/octet-stream');
+    });
+
+    it('serializes GRAPHQL queries and parsed variables object', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        method: 'POST',
+        bodyType: 'GRAPHQL',
+        bodyContent: JSON.stringify({
+          query: 'query GetUser($id: ID!) { user(id: $id) { name } }',
+          variables: '{"id": "123"}',
+          operationName: 'GetUser',
+        }),
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      const parsedBody = JSON.parse(opts.body);
+      expect(parsedBody.query).toContain('GetUser');
+      expect(parsedBody.variables).toEqual({ id: '123' });
+      expect(parsedBody.operationName).toBe('GetUser');
+      expect(opts.headers['Content-Type']).toBe('application/json');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Expanded Authentication Injection Tests
+  // -------------------------------------------------------------------------
+  describe('authentication types expansion', () => {
+    it('injects API_KEY in cookies when location is cookie', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        authType: 'API_KEY',
+        authConfig: {
+          key: 'session',
+          value: 'secret123',
+          location: 'cookie',
+        },
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.headers['Cookie']).toBe('session=secret123');
+    });
+
+    it('injects OAUTH2 access token as a Bearer authorization header', async () => {
+      mockFetch.mockResolvedValueOnce(buildFetchResponse(200, '{}'));
+      const req = buildRequest({
+        authType: 'OAUTH2',
+        authConfig: {
+          accessToken: 'oauth-token-xyz',
+        },
+      });
+
+      await service.execute(req);
+      const [, opts] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1] as [any, any];
+      expect(opts.headers['Authorization']).toBe('Bearer oauth-token-xyz');
+    });
+  });
 });

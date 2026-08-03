@@ -110,34 +110,51 @@ export class RequestExecutionService {
       return;
     }
 
+    // Normalise casing of configuration keys
+    const getConf = (k: string) => config[k] || '';
+
     switch (authType) {
       case 'BEARER': {
-        const token = config.token || '';
+        const token = getConf('token');
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
         break;
       }
       case 'BASIC': {
-        const username = config.username || '';
-        const password = config.password || '';
+        const username = getConf('username');
+        const password = getConf('password');
         const encoded = Buffer.from(`${username}:${password}`).toString('base64');
         headers['Authorization'] = `Basic ${encoded}`;
         break;
       }
       case 'API_KEY': {
-        const key = config.key || '';
-        const value = config.value || '';
-        const location = config.location || 'header';
-        const name = config.headerName || key;
+        const key = getConf('key');
+        const value = getConf('value');
+        const location = getConf('location') || 'header';
+        const name = getConf('headerName') || key;
 
         if (name && value) {
           if (location === 'header') {
             headers[name] = value;
           } else if (location === 'query') {
             queryParams[name] = value;
+          } else if (location === 'cookie') {
+            const existing = headers['Cookie'] || headers['cookie'] || '';
+            headers['Cookie'] = existing ? `${existing}; ${name}=${value}` : `${name}=${value}`;
           }
         }
+        break;
+      }
+      case 'OAUTH2': {
+        const token = getConf('accessToken');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        break;
+      }
+      case 'DIGEST': {
+        // Marked as not supported yet / placeholder configuration model
         break;
       }
       default:
@@ -174,14 +191,114 @@ export class RequestExecutionService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      // Prepare outgoing options
+      // Prepare body and headers dynamically
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let finalBody: any = undefined;
+      const lowerCaseHeaders = Object.keys(headers).reduce<Record<string, string>>((acc, key) => {
+        acc[key.toLowerCase()] = headers[key] || '';
+        return acc;
+      }, {});
+
       const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && bodyType !== 'NONE';
+
+      if (hasBody) {
+        if (bodyType === 'JSON') {
+          finalBody = bodyContent;
+          if (!lowerCaseHeaders['content-type']) {
+            headers['Content-Type'] = 'application/json';
+          }
+        } else if (bodyType === 'RAW') {
+          finalBody = bodyContent;
+          if (!lowerCaseHeaders['content-type']) {
+            headers['Content-Type'] = 'text/plain';
+          }
+        } else if (bodyType === 'FORM_URL_ENCODED') {
+          try {
+            const parsed = JSON.parse(bodyContent) as Array<{ key: string; value: string; enabled?: boolean }>;
+            const params = new globalThis.URLSearchParams();
+            for (const item of parsed) {
+              if (item.enabled !== false && item.key.trim()) {
+                params.append(item.key, item.value);
+              }
+            }
+            finalBody = params.toString();
+          } catch {
+            finalBody = bodyContent;
+          }
+          if (!lowerCaseHeaders['content-type']) {
+            headers['Content-Type'] = 'application/x-www-form-urlencoded';
+          }
+        } else if (bodyType === 'FORM_DATA') {
+          // Multipart form data
+          const formData = new FormData();
+          try {
+            const parsed = JSON.parse(bodyContent) as Array<{ key: string; value: string; enabled?: boolean; filename?: string; fileContent?: string }>;
+            for (const item of parsed) {
+              if (item.enabled !== false && item.key.trim()) {
+                if (item.fileContent && item.filename) {
+                  const buffer = Buffer.from(item.fileContent, 'base64');
+                  const blob = new globalThis.Blob([buffer]);
+                  formData.append(item.key, blob, item.filename);
+                } else {
+                  formData.append(item.key, item.value);
+                }
+              }
+            }
+          } catch {
+            // fallback
+          }
+          finalBody = formData;
+          // Delete Content-Type header to allow fetch to automatically compute multipart boundary
+          for (const key of Object.keys(headers)) {
+            if (key.toLowerCase() === 'content-type') {
+              delete headers[key];
+            }
+          }
+        } else if (bodyType === 'BINARY') {
+          try {
+            const parsed = JSON.parse(bodyContent) as { filename?: string; fileContent?: string };
+            if (parsed.fileContent) {
+              finalBody = Buffer.from(parsed.fileContent, 'base64');
+            } else {
+              finalBody = Buffer.alloc(0);
+            }
+          } catch {
+            finalBody = Buffer.from(bodyContent, 'utf8');
+          }
+          if (!lowerCaseHeaders['content-type']) {
+            headers['Content-Type'] = 'application/octet-stream';
+          }
+        } else if (bodyType === 'GRAPHQL') {
+          try {
+            const parsed = JSON.parse(bodyContent) as { query: string; variables?: string; operationName?: string };
+            let variablesObj = {};
+            if (parsed.variables) {
+              try {
+                variablesObj = typeof parsed.variables === 'string' ? JSON.parse(parsed.variables) : parsed.variables;
+              } catch {
+                variablesObj = {};
+              }
+            }
+            finalBody = JSON.stringify({
+              query: parsed.query,
+              variables: variablesObj,
+              operationName: parsed.operationName || undefined,
+            });
+          } catch {
+            finalBody = bodyContent;
+          }
+          if (!lowerCaseHeaders['content-type']) {
+            headers['Content-Type'] = 'application/json';
+          }
+        }
+      }
+
       const fetchOpts: RequestInit = {
         method,
         headers,
         signal: controller.signal,
         redirect: 'manual', // Manual handling to enforce redirect SSRF checks
-        body: hasBody ? bodyContent : undefined,
+        body: finalBody,
       };
 
       try {
