@@ -56,7 +56,10 @@ export function StudioPage() {
 
           <div className="flex items-center gap-4">
             {/* User Details */}
-            <div className="text-right hidden sm:block text-[10px] font-bold text-surface-450 uppercase tracking-widest">
+            <div
+              data-testid="authenticated-user"
+              className="text-right text-[10px] font-bold text-surface-450 uppercase tracking-widest"
+            >
               Logged in as{' '}
               <span className="text-xs font-bold text-surface-200 block normal-case tracking-normal mt-0.5">
                 {user?.username}
