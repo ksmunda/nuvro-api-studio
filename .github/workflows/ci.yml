@@ -89,6 +89,11 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter @nuvro/e2e exec playwright install --with-deps
 
+      - name: Stop pre-installed Postgres
+        run: |
+          sudo systemctl stop postgresql || true
+          sudo service postgresql stop || true
+
       - name: Start Postgres
         run: |
           docker compose up -d postgres
