@@ -30,11 +30,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.24.0
-          run_install: false
+      - name: Runner diagnostics
+        run: |
+          uname -a
+          node --version
+          npm --version
+          corepack --version || true
+          which node
+          which npm
+          which pnpm || true
+          env | sort | grep -E 'NODE|PNPM|COREPACK' || true
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.24.0 --activate
+
+      - name: Verify environment
+        run: |
+          node --version
+          corepack --version
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -60,11 +77,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.24.0
-          run_install: false
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.24.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -90,11 +107,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.24.0
-          run_install: false
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.24.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
