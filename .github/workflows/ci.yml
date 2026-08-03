@@ -89,11 +89,27 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter @nuvro/e2e exec playwright install --with-deps
 
+      - name: Start Postgres
+        run: |
+          docker compose up -d postgres
+          echo "Waiting for Postgres to be ready..."
+          until docker exec nuvro_postgres pg_isready -U nuvro -d nuvro_dev; do
+            sleep 1
+          done
+          echo "Postgres is ready!"
+
+      - name: Run Database Migrations
+        run: pnpm --filter @nuvro/database db:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@localhost:5432/nuvro_dev
+
       - name: Build
         run: pnpm build
 
       - name: Test
         run: pnpm test
+        env:
+          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@localhost:5432/nuvro_dev
 
   build:
     name: Build
