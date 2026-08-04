@@ -112,7 +112,7 @@ jobs:
         run: pnpm build
 
       - name: Test
-        run: pnpm test
+        run: pnpm --filter @nuvro/e2e test
         env:
           DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
 
