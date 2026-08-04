@@ -18,7 +18,7 @@ test.describe('NUVRO API Studio - Environments & Variables E2E Flow', () => {
     await page.click('button:has-text("Create account")');
 
     // 2. Wait for redirect to Studio page
-    await expect(page.locator('text=Logged in as')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('authenticated-user')).toBeVisible({ timeout: 10000 });
 
     // 3. Open environment manager
     await page.click('#env-selector-btn');
@@ -42,7 +42,7 @@ test.describe('NUVRO API Studio - Environments & Variables E2E Flow', () => {
     await addRow1.locator('button:has-text("+ Add")').click();
 
     // Wait for the first variable to be added and rendered
-    await expect(page.locator('input[value="BASE_URL"]')).toBeVisible();
+    await expect(page.locator('input[value="BASE_URL"]').first()).toBeVisible();
 
     // Add a second variable (e.g. USER_ID)
     const addRow2 = page.locator('table tbody tr').last();
@@ -62,7 +62,7 @@ test.describe('NUVRO API Studio - Environments & Variables E2E Flow', () => {
     await addRow2.locator('button:has-text("+ Add")').click();
 
     // Wait for the second variable to be added
-    await expect(page.locator('input[value="USER_ID"]')).toBeVisible();
+    await expect(page.locator('input[value="USER_ID"]').first()).toBeVisible();
 
     // Close Modal
     await page.click('button:has-text("Close")');

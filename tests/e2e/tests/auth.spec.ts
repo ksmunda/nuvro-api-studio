@@ -19,13 +19,13 @@ test.describe('Developer Authentication flow', () => {
     await page.click('button:has-text("Create account")');
 
     // 3. Verify redirected to root dashboard
-    await expect(page.getByRole('heading', { name: 'NUVRO API Studio' })).toBeVisible();
-    await expect(page.locator('text=Logged in as')).toContainText(username);
+    await expect(page.getByTestId('authenticated-user')).toBeVisible();
+    await expect(page.getByTestId('authenticated-user')).toContainText(username);
 
     // 4. Verify session persistence on page refresh
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'NUVRO API Studio' })).toBeVisible();
-    await expect(page.locator('text=Logged in as')).toContainText(username);
+    await expect(page.getByTestId('authenticated-user')).toBeVisible();
+    await expect(page.getByTestId('authenticated-user')).toContainText(username);
 
     // 5. Logout
     await page.click('button:has-text("Logout")');

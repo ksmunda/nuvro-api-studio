@@ -15,8 +15,8 @@ test.describe('NUVRO API Studio - Request Builder & Response E2E Flow', () => {
     await page.click('button:has-text("Create account")');
 
     // 2. Wait for redirect to Studio page
-    await expect(page.getByRole('heading', { name: 'NUVRO API Studio' })).toBeVisible();
-    await expect(page.locator('text=Logged in as')).toContainText(username);
+    await expect(page.getByTestId('authenticated-user')).toBeVisible();
+    await expect(page.getByTestId('authenticated-user')).toContainText(username);
 
     // 3. Configure a GET request
     // Set the method selector (default is GET, but let's verify we can interact with it)
