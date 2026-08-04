@@ -106,7 +106,7 @@ jobs:
       - name: Run Database Migrations
         run: pnpm --filter @nuvro/database db:migrate:deploy
         env:
-          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@localhost:5432/nuvro_dev
+          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
 
       - name: Build
         run: pnpm build
@@ -114,7 +114,7 @@ jobs:
       - name: Test
         run: pnpm test
         env:
-          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@localhost:5432/nuvro_dev
+          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
 
   build:
     name: Build

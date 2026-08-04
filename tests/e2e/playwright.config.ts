@@ -30,7 +30,7 @@ export default defineConfig({
       reuseExistingServer: !process.env['CI'],
       timeout: 120_000,
       env: {
-        DATABASE_URL: process.env['DATABASE_URL'] ?? 'postgresql://nuvro:nuvro_dev_password@localhost:5432/nuvro_dev',
+        DATABASE_URL: process.env['DATABASE_URL'] ?? 'postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev',
         PORT: '4000',
         ALLOW_PRIVATE_IPS: 'true',
       },
