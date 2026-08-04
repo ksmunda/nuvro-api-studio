@@ -9,7 +9,7 @@
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:deploy": "prisma db push --accept-data-loss",
     "db:studio": "prisma studio",
     "db:seed": "tsx src/seed.ts",
     "db:reset": "prisma migrate reset",

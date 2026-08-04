@@ -108,6 +108,13 @@ jobs:
         env:
           DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
 
+      - name: Verify Database Schema
+        run: |
+          echo "Verifying database schema initialization..."
+          docker exec nuvro_postgres psql -U nuvro -d nuvro_dev -c '\dt public.users' | grep -i users
+        env:
+          DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
+
       - name: Build
         run: pnpm build
 
