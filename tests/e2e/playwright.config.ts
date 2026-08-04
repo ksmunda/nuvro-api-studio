@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: process.env['CI'] ? [['github'], ['list'], ['html', { open: 'never' }]] : 'html',
   use: {
-    baseURL: process.env['BASE_URL'] ?? 'http://localhost:5173',
+    baseURL: process.env['BASE_URL'] ?? 'http://127.0.0.1:5173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -21,13 +21,13 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter @nuvro/web dev',
-      url: 'http://localhost:5173',
+      url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env['CI'],
       timeout: 120_000,
     },
     {
       command: 'pnpm --filter @nuvro/api dev',
-      url: 'http://localhost:4000/api/v1/health',
+      url: 'http://127.0.0.1:4000/api/v1/health',
       reuseExistingServer: !process.env['CI'],
       timeout: 120_000,
       env: {
