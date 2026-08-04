@@ -36,9 +36,9 @@ test.describe('NUVRO API Studio - Environments & Variables E2E Flow', () => {
     await keyInput1.fill('BASE_URL');
     await page.waitForTimeout(200);
     await expect(keyInput1).toHaveValue('BASE_URL');
-    await valInput1.fill('http://localhost:4000/api/v1');
+    await valInput1.fill('http://127.0.0.1:4000/api/v1');
     await page.waitForTimeout(200);
-    await expect(valInput1).toHaveValue('http://localhost:4000/api/v1');
+    await expect(valInput1).toHaveValue('http://127.0.0.1:4000/api/v1');
     await addRow1.locator('button:has-text("+ Add")').click();
 
     // Wait for the first variable to be added and rendered
@@ -74,7 +74,7 @@ test.describe('NUVRO API Studio - Environments & Variables E2E Flow', () => {
     // 7. Enter templated URL and check preview
     await page.fill('input[placeholder*="Enter request URL"]', '{{BASE_URL}}/health');
     await expect(page.locator('text=Resolved URL Preview:')).toBeVisible();
-    await expect(page.locator('text=http://localhost:4000/api/v1/health')).toBeVisible();
+    await expect(page.locator('text=http://127.0.0.1:4000/api/v1/health')).toBeVisible();
 
     // 8. Execute request
     await page.click('button:has-text("Send")');

@@ -23,7 +23,7 @@ test.describe('NUVRO API Studio - Request Builder & Response E2E Flow', () => {
     await page.selectOption('#method-selector', 'GET');
 
     // Enter local backend health endpoint URL
-    await page.fill('input[placeholder*="Enter request URL"]', 'http://localhost:4000/api/v1/health');
+    await page.fill('input[placeholder*="Enter request URL"]', 'http://127.0.0.1:4000/api/v1/health');
 
     // Click Send
     await page.click('button:has-text("Send")');
