@@ -1,0 +1,23 @@
+=== CI AUTHENTICATION DIAGNOSTIC REPORT ===
+Run ID: 30896034995
+Repository: ksmunda/nuvro-api-studio
+Commit SHA: 05db1a3fd3fd0edeac66ee6c5c5f886b6cd725d8
+
+## Root Cause
+Prisma was attempting to perform a findUnique on the User table, but the table did not exist in the database. During GHA CI database setup, the repository ran 'prisma migrate deploy' to apply migrations. Because the codebase does not have a migrations folder, Prisma ran 0 migrations and reported the database up-to-date, but without creating any tables.
+
+## Evidence
+- CI job "Unit & E2E Tests" failed in the "Test" step.
+- GHA failure annotations show 'expect(locator).toBeVisible() failed' for getByTestId('authenticated-user').
+- CI logs reported: "The table public.users does not exist in the current database."
+- The 'database/prisma/prisma' directory contains 'schema.prisma' but no 'migrations' directory.
+
+## Implementation Details
+1. Updated 'db:migrate:deploy' script in 'database/prisma/package.json' from 'prisma migrate deploy' to 'prisma db push --accept-data-loss'. This uses Prisma's direct schema sync, which does not require migration directories, to initialize the database tables.
+2. Added a schema verification step in '.github/workflows/ci.yml' immediately after the migration step to check that the 'public.users' table is created, failing early if the schema initialization failed.
+
+## Local Test Results
+- lint: PASS
+- type-check: PASS
+- build: PASS
+- E2E tests (12/12): PASS (Chromium, Firefox, WebKit)
