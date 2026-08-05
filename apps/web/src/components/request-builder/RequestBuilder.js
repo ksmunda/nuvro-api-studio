@@ -11,9 +11,10 @@ import { BodyEditor } from './BodyEditor.js';
 import { useRequestStore } from '../../store/request-store.js';
 import { useCollectionStore } from '../../store/collection-store.js';
 import { useEnvironmentStore } from '../../store/environment-store.js';
+import { useRequestTabsStore, checkTabDirty } from '../../store/request-tabs-store.js';
 export function RequestBuilder() {
     const { activeTab, sendRequest, method, url, headers, queryParams, authType, authConfig, bodyType, bodyContent } = useRequestStore();
-    const { activeRequest, collections, isSaving, isDirty, updateRequest, createRequest, setActiveRequest, } = useCollectionStore();
+    const { activeRequest, collections, isSaving, updateRequest, createRequest, setActiveRequest, } = useCollectionStore();
     const activeEnvDetail = useEnvironmentStore((s) => s.activeEnvironmentDetail);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [saveData, setSaveData] = useState({ name: 'New Request', collectionId: '', folderId: null });
@@ -35,7 +36,9 @@ export function RequestBuilder() {
         });
         return resolved;
     };
-    const dirty = isDirty();
+    const activeTabId = useRequestTabsStore((s) => s.activeTabId);
+    const activeTabObj = useRequestTabsStore((s) => s.tabs.find((t) => t.id === activeTabId));
+    const dirty = activeTabObj ? checkTabDirty(activeTabObj) : false;
     const handleSave = async () => {
         if (activeRequest) {
             // Update existing
@@ -49,6 +52,12 @@ export function RequestBuilder() {
                 bodyType,
                 bodyContent: bodyContent || undefined,
             });
+            const updatedReq = useCollectionStore.getState().collections
+                .flatMap((c) => c.requests || [])
+                .find((r) => r.id === activeRequest.id);
+            if (updatedReq) {
+                useRequestTabsStore.getState().saveActiveTab(updatedReq);
+            }
         }
         else {
             // First save — open dialog
@@ -64,6 +73,7 @@ export function RequestBuilder() {
         if (!saveData.name.trim() || !saveData.collectionId)
             return;
         const req = await createRequest(saveData.collectionId, saveData.name.trim(), method, url, saveData.folderId);
+        useRequestTabsStore.getState().saveActiveTab(req);
         setActiveRequest(req);
         setShowSaveDialog(false);
     };

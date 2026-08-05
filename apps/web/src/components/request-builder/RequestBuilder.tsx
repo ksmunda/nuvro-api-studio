@@ -10,6 +10,7 @@ import { BodyEditor } from './BodyEditor.js';
 import { useRequestStore } from '../../store/request-store.js';
 import { useCollectionStore } from '../../store/collection-store.js';
 import { useEnvironmentStore } from '../../store/environment-store.js';
+import { useRequestTabsStore, checkTabDirty } from '../../store/request-tabs-store.js';
 
 export function RequestBuilder() {
   const { activeTab, sendRequest, method, url, headers, queryParams, authType, authConfig, bodyType, bodyContent } = useRequestStore();
@@ -17,7 +18,6 @@ export function RequestBuilder() {
     activeRequest,
     collections,
     isSaving,
-    isDirty,
     updateRequest,
     createRequest,
     setActiveRequest,
@@ -52,7 +52,9 @@ export function RequestBuilder() {
     return resolved;
   };
 
-  const dirty = isDirty();
+  const activeTabId = useRequestTabsStore((s) => s.activeTabId);
+  const activeTabObj = useRequestTabsStore((s) => s.tabs.find((t) => t.id === activeTabId));
+  const dirty = activeTabObj ? checkTabDirty(activeTabObj) : false;
 
   const handleSave = async () => {
     if (activeRequest) {
@@ -67,6 +69,12 @@ export function RequestBuilder() {
         bodyType,
         bodyContent: bodyContent || undefined,
       });
+      const updatedReq = useCollectionStore.getState().collections
+        .flatMap((c) => c.requests || [])
+        .find((r) => r.id === activeRequest.id);
+      if (updatedReq) {
+        useRequestTabsStore.getState().saveActiveTab(updatedReq);
+      }
     } else {
       // First save — open dialog
       if (collections.length === 0) {
@@ -87,6 +95,7 @@ export function RequestBuilder() {
       url,
       saveData.folderId,
     );
+    useRequestTabsStore.getState().saveActiveTab(req);
     setActiveRequest(req);
     setShowSaveDialog(false);
   };

@@ -3,6 +3,8 @@ import { useAuthStore } from '../store/auth.js';
 import { RequestBuilder } from '../components/request-builder/RequestBuilder.js';
 import { ResponseViewer } from '../components/response-viewer/ResponseViewer.js';
 import { CollectionSidebar } from '../components/sidebar/CollectionSidebar.js';
+import { RequestTabBar } from '../components/request-builder/RequestTabBar.js';
+import { useRequestTabsStore } from '../store/request-tabs-store.js';
 
 import { EnvironmentSelector } from '../components/environments/EnvironmentSelector.js';
 import { EnvironmentModal } from '../components/environments/EnvironmentModal.js';
@@ -18,9 +20,21 @@ export function StudioPage() {
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
+  const tabs = useRequestTabsStore((s) => s.tabs);
+  const openNewRequest = useRequestTabsStore((s) => s.openNewRequest);
+
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (activeWorkspaceId) {
+      const workspaceTabs = tabs.filter((t) => t.workspaceId === activeWorkspaceId);
+      if (workspaceTabs.length === 0) {
+        openNewRequest(activeWorkspaceId);
+      }
+    }
+  }, [activeWorkspaceId, tabs, openNewRequest]);
 
   return (
     <div className="flex flex-col min-h-screen bg-surface-950 text-surface-100 font-sans relative overflow-hidden select-none">
@@ -110,6 +124,7 @@ export function StudioPage() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-surface-950/20">
           <div className="max-w-5xl mx-auto space-y-6">
+            <RequestTabBar />
             <RequestBuilder />
             <ResponseViewer />
           </div>

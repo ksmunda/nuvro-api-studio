@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { CollectionDetail, FolderDto, ApiRequest } from '@nuvro/types';
 import { useCollectionStore } from '../../store/collection-store.js';
 import { useHistoryStore } from '../../store/history-store.js';
+import { useRequestTabsStore, checkTabDirty } from '../../store/request-tabs-store.js';
 
 interface ContextMenuState {
   type: 'collection' | 'folder' | 'request';
@@ -306,7 +307,6 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
     isSaving,
     error,
     loadCollections,
-    setActiveRequest,
     createCollection,
     updateCollection,
     deleteCollection,
@@ -315,10 +315,11 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
     createRequest,
     deleteRequest,
     duplicateRequest,
-    isDirty,
   } = useCollectionStore();
 
-  const currentIsDirty = isDirty();
+  const activeTabId = useRequestTabsStore((s) => s.activeTabId);
+  const activeTabObj = useRequestTabsStore((s) => s.tabs.find((t) => t.id === activeTabId));
+  const currentIsDirty = activeTabObj ? checkTabDirty(activeTabObj) : false;
 
   const {
     history,
@@ -370,7 +371,13 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
   }, []);
 
   const handleSelectRequest = (req: ApiRequest) => {
-    setActiveRequest(req);
+    useRequestTabsStore.getState().openSavedRequest(req, workspaceId);
+  };
+
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const handleSelectHistoryItem = (item: any) => {
+    useRequestTabsStore.getState().openNewRequest(workspaceId);
+    selectHistoryItem(item);
   };
 
   const handleAddFolder = async (collectionId: string) => {
@@ -439,8 +446,8 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
       '',
       saveDialogData.folderId,
     );
+    useRequestTabsStore.getState().openSavedRequest(req, workspaceId);
     setShowSaveDialog(false);
-    setActiveRequest(req);
   };
 
   return (
@@ -593,7 +600,7 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
               <div
                 key={item.id}
                 className="group flex items-center justify-between gap-1.5 px-2 py-1.5 rounded-lg hover:bg-surface-800/40 transition-all cursor-pointer relative"
-                onClick={() => selectHistoryItem(item)}
+                onClick={() => handleSelectHistoryItem(item)}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <MethodBadge method={item.method} />
