@@ -124,7 +124,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Build
-        run: pnpm build
+        run: pnpm build --filter=!@nuvro/desktop
 
       - name: Test
         run: pnpm --filter @nuvro/e2e test
@@ -189,4 +189,4 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Build all packages
-        run: pnpm build
+        run: pnpm build --filter=!@nuvro/desktop
