@@ -13,7 +13,7 @@ import { useCollectionStore } from '../../store/collection-store.js';
 import { useEnvironmentStore } from '../../store/environment-store.js';
 export function RequestBuilder() {
     const { activeTab, sendRequest, method, url, headers, queryParams, authType, authConfig, bodyType, bodyContent } = useRequestStore();
-    const { activeRequest, collections, isSaving, isDirty, updateRequest, createRequest, } = useCollectionStore();
+    const { activeRequest, collections, isSaving, isDirty, updateRequest, createRequest, setActiveRequest, } = useCollectionStore();
     const activeEnvDetail = useEnvironmentStore((s) => s.activeEnvironmentDetail);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [saveData, setSaveData] = useState({ name: 'New Request', collectionId: '', folderId: null });
@@ -47,7 +47,7 @@ export function RequestBuilder() {
                 authType,
                 authConfig: authConfig,
                 bodyType,
-                bodyContent: bodyContent || null,
+                bodyContent: bodyContent || undefined,
             });
         }
         else {
@@ -63,7 +63,8 @@ export function RequestBuilder() {
     const handleSaveNew = async () => {
         if (!saveData.name.trim() || !saveData.collectionId)
             return;
-        await createRequest(saveData.collectionId, saveData.name.trim(), method, url, saveData.folderId);
+        const req = await createRequest(saveData.collectionId, saveData.name.trim(), method, url, saveData.folderId);
+        setActiveRequest(req);
         setShowSaveDialog(false);
     };
     const renderActiveEditor = () => {

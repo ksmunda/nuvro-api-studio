@@ -91,6 +91,27 @@ export class WorkspaceRepository {
     }
   }
 
+  async findMembers(workspaceId: string): Promise<unknown[]> {
+    try {
+      return await prisma.workspaceMember.findMany({
+        where: { workspaceId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      handleDatabaseError(error);
+    }
+  }
+
   async addMember(workspaceId: string, userId: string, role: WorkspaceRole): Promise<WorkspaceMember> {
     try {
       return await prisma.workspaceMember.create({

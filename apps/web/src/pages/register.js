@@ -3,6 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.js';
+import { getApiUrl } from '../config/api.js';
 export function RegisterPage() {
     const navigate = useNavigate();
     const setUser = useAuthStore((state) => state.setUser);
@@ -17,7 +18,7 @@ export function RegisterPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/v1/auth/register', {
+            const res = await fetch(getApiUrl('/api/v1/auth/register'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, username, password }),

@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.js';
 
+import { getApiUrl } from '../../config/api.js';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -12,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     // Try to load user profile on mount to see if session cookie is valid
     if (!isAuthenticated && isLoading) {
-      fetch('/api/v1/auth/me')
+      fetch(getApiUrl('/api/v1/auth/me'))
         .then((res) => {
           if (res.ok) return res.json();
           throw new Error('Not authenticated');

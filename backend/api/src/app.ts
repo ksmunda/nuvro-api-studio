@@ -32,7 +32,12 @@ app.use(
 // 2. CORS configuration via validated env.ts
 app.use(
   cors({
-    origin: env.WEB_URL,
+    origin: [
+      env.WEB_URL,
+      'tauri://localhost',
+      'https://tauri.localhost',
+      'http://tauri.localhost',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],

@@ -19,4 +19,6 @@ export { ApiClient } from './client.js';
 export { FetchTransport } from './transports/fetch.js';
 export { CollectionsClient } from './collections-client.js';
 export { EnvironmentsClient } from './environments-client.js';
+export { HistoryClient } from './history-client.js';
+export { WorkspacesClient } from './workspaces-client.js';
 export type { ApiTransport, ApiClientOptions, RequestResult } from './types.js';

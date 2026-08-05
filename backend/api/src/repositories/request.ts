@@ -187,6 +187,26 @@ export class RequestRepository {
       handleDatabaseError(error);
     }
   }
+
+  async deleteHistoryItem(id: string): Promise<RequestHistory> {
+    try {
+      return await prisma.requestHistory.delete({
+        where: { id },
+      });
+    } catch (error) {
+      handleDatabaseError(error);
+    }
+  }
+
+  async clearHistory(userId: string): Promise<{ count: number }> {
+    try {
+      return await prisma.requestHistory.deleteMany({
+        where: { userId },
+      });
+    } catch (error) {
+      handleDatabaseError(error);
+    }
+  }
 }
 
 export const requestRepository = new RequestRepository();

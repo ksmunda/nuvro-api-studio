@@ -9,8 +9,9 @@ import type {
   AuthType,
   BodyType,
 } from '@nuvro/types';
+import { API_BASE } from '../config/api.js';
 
-const collectionsClient = new CollectionsClient();
+const collectionsClient = new CollectionsClient(`${API_BASE}/api/v1`);
 
 export interface SavedRequestState {
   collections: CollectionDetail[];

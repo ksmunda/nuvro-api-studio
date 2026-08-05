@@ -20,6 +20,7 @@ export function RequestBuilder() {
     isDirty,
     updateRequest,
     createRequest,
+    setActiveRequest,
   } = useCollectionStore();
 
   const activeEnvDetail = useEnvironmentStore((s) => s.activeEnvironmentDetail);
@@ -64,7 +65,7 @@ export function RequestBuilder() {
         authType,
         authConfig: authConfig as Record<string, unknown>,
         bodyType,
-        bodyContent: bodyContent || null,
+        bodyContent: bodyContent || undefined,
       });
     } else {
       // First save — open dialog
@@ -79,13 +80,14 @@ export function RequestBuilder() {
 
   const handleSaveNew = async () => {
     if (!saveData.name.trim() || !saveData.collectionId) return;
-    await createRequest(
+    const req = await createRequest(
       saveData.collectionId,
       saveData.name.trim(),
       method,
       url,
       saveData.folderId,
     );
+    setActiveRequest(req);
     setShowSaveDialog(false);
   };
 

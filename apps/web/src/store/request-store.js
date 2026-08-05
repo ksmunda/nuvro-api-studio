@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { ApiClient, FetchTransport } from '@nuvro/api-client';
 import { useEnvironmentStore } from './environment-store.js';
+import { API_BASE } from '../config/api.js';
 // Centralised API client instance using the FetchTransport proxy endpoint
-const transport = new FetchTransport('/api/v1/requests/execute');
+const transport = new FetchTransport(`${API_BASE}/api/v1/requests/execute`);
 const apiClient = new ApiClient({ transport, defaultTimeoutMs: 10000 });
 const defaultKeyValuePair = () => ({ key: '', value: '', enabled: true });
 export const useRequestStore = create((set, get) => ({

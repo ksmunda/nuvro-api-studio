@@ -183,6 +183,25 @@ export class RequestService {
   ): Promise<RequestHistory> {
     return await requestRepository.createHistory(data);
   }
+
+  async getHistoryByUser(userId: string): Promise<RequestHistory[]> {
+    return await requestRepository.findHistoryByUser(userId);
+  }
+
+  async deleteHistoryItem(id: string, userId: string): Promise<RequestHistory> {
+    const item = await requestRepository.findHistoryById(id);
+    if (!item) {
+      throw new NotFoundError('History item not found');
+    }
+    if (item.userId !== userId) {
+      throw new ForbiddenError('You do not have permission to delete this history item');
+    }
+    return await requestRepository.deleteHistoryItem(id);
+  }
+
+  async clearHistory(userId: string): Promise<{ count: number }> {
+    return await requestRepository.clearHistory(userId);
+  }
 }
 
 export const requestService = new RequestService();

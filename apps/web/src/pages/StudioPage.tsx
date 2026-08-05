@@ -6,28 +6,21 @@ import { CollectionSidebar } from '../components/sidebar/CollectionSidebar.js';
 
 import { EnvironmentSelector } from '../components/environments/EnvironmentSelector.js';
 import { EnvironmentModal } from '../components/environments/EnvironmentModal.js';
+import { useWorkspaceStore } from '../store/workspace-store.js';
+import { WorkspaceSelector } from '../components/workspaces/WorkspaceSelector.js';
+import { WorkspaceModal } from '../components/workspaces/WorkspaceModal.js';
+import { WorkspaceSettingsModal } from '../components/workspaces/WorkspaceSettingsModal.js';
 
 export function StudioPage() {
   const { user, logout } = useAuthStore();
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const { activeWorkspaceId, initialize } = useWorkspaceStore();
   const [isEnvModalOpen, setIsEnvModalOpen] = useState(false);
+  const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  // Fetch the first workspace on mount (the user's default workspace)
   useEffect(() => {
-    fetch('/api/v1/workspaces')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load workspaces');
-        return res.json();
-      })
-      .then((payload) => {
-        if (payload.success && Array.isArray(payload.data) && payload.data.length > 0) {
-          setWorkspaceId(payload.data[0].id);
-        }
-      })
-      .catch(() => {
-        // ignore — workspace may not be loaded yet
-      });
-  }, []);
+    initialize();
+  }, [initialize]);
 
   return (
     <div className="flex flex-col min-h-screen bg-surface-950 text-surface-100 font-sans relative overflow-hidden select-none">
@@ -43,15 +36,32 @@ export function StudioPage() {
             <div className="h-8 w-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-surface-950 text-sm shadow-glow-brand tracking-tighter select-none">
               NV
             </div>
-            <h1 className="font-extrabold text-base tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-accent-400 bg-clip-text text-transparent mr-4 select-none">
-              NUVRO <span className="font-light text-surface-300">API Studio</span>
+            <h1 className="font-extrabold text-base tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-accent-400 bg-clip-text text-transparent select-none">
+              NUVRO
             </h1>
-            {workspaceId && (
-              <EnvironmentSelector
-                workspaceId={workspaceId}
-                onManageClick={() => setIsEnvModalOpen(true)}
-              />
-            )}
+            <div className="flex items-center gap-2 border-l border-surface-800/80 pl-3">
+              <WorkspaceSelector onCreateWorkspaceClick={() => setIsWorkspaceModalOpen(true)} />
+              {activeWorkspaceId && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingsModalOpen(true)}
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-surface-900/60 hover:bg-surface-800 border border-surface-800/80 text-surface-400 hover:text-surface-100 transition-all active:scale-[0.98] outline-none focus:border-brand-500/50"
+                    data-testid="workspace-settings-btn"
+                    aria-label="Workspace settings"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a7.72 7.72 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                  <EnvironmentSelector
+                    workspaceId={activeWorkspaceId}
+                    onManageClick={() => setIsEnvModalOpen(true)}
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -95,7 +105,7 @@ export function StudioPage() {
       {/* Main Studio Layout: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden relative z-10" style={{ height: 'calc(100vh - 56px)' }}>
         {/* Left Sidebar */}
-        {workspaceId && <CollectionSidebar workspaceId={workspaceId} />}
+        {activeWorkspaceId && <CollectionSidebar workspaceId={activeWorkspaceId} />}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-surface-950/20">
@@ -111,13 +121,23 @@ export function StudioPage() {
         &copy; {new Date().getFullYear()} NUVRO API Studio. Premium Developer Experience.
       </footer>
 
-      {workspaceId && (
+      {activeWorkspaceId && (
         <EnvironmentModal
-          workspaceId={workspaceId}
+          workspaceId={activeWorkspaceId}
           isOpen={isEnvModalOpen}
           onClose={() => setIsEnvModalOpen(false)}
         />
       )}
+
+      <WorkspaceModal
+        isOpen={isWorkspaceModalOpen}
+        onClose={() => setIsWorkspaceModalOpen(false)}
+      />
+
+      <WorkspaceSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
     </div>
   );
 }

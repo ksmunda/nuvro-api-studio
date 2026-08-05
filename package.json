@@ -11,6 +11,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
+    "desktop:dev": "source $HOME/.cargo/env && pnpm --filter @nuvro/desktop dev",
+    "desktop:build": "source $HOME/.cargo/env && pnpm --filter @nuvro/desktop build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "test": "turbo run test",

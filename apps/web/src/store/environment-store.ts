@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { EnvironmentsClient } from '@nuvro/api-client';
 import type { Environment, EnvironmentDetail, Variable } from '@nuvro/types';
+import { API_BASE } from '../config/api.js';
 
-const client = new EnvironmentsClient();
+const client = new EnvironmentsClient(`${API_BASE}/api/v1`);
 
 interface EnvironmentState {
   environments: Environment[];

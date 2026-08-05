@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { CollectionDetail, FolderDto, ApiRequest } from '@nuvro/types';
 import { useCollectionStore } from '../../store/collection-store.js';
+import { useHistoryStore } from '../../store/history-store.js';
 
 interface ContextMenuState {
   type: 'collection' | 'folder' | 'request';
@@ -319,6 +320,17 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
 
   const currentIsDirty = isDirty();
 
+  const {
+    history,
+    isLoading: isHistoryLoading,
+    loadHistory,
+    clearHistory,
+    deleteHistoryItem,
+    selectHistoryItem,
+  } = useHistoryStore();
+
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'collections' | 'history'>('collections');
+
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
@@ -338,6 +350,13 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
       loadCollections(workspaceId);
     }
   }, [workspaceId, loadCollections]);
+
+  // Load history when tab is clicked
+  useEffect(() => {
+    if (activeSidebarTab === 'history') {
+      loadHistory();
+    }
+  }, [activeSidebarTab, loadHistory]);
 
   // Close context menu on outside click
   useEffect(() => {
@@ -426,91 +445,186 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
 
   return (
     <aside className="w-64 min-w-[220px] max-w-[280px] bg-surface-950 border-r border-surface-800/60 flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="px-3 py-3 border-b border-surface-800/60 flex items-center justify-between shrink-0">
-        <h2 className="text-xs font-bold text-surface-400 uppercase tracking-widest">Collections</h2>
+      {/* Header Tabs */}
+      <div className="flex border-b border-surface-800/60 shrink-0">
         <button
           type="button"
-          title="New Collection"
-          onClick={() => setShowNewCollectionModal(true)}
-          className="flex items-center justify-center w-6 h-6 rounded text-surface-500 hover:text-brand-400 hover:bg-surface-800 transition-colors"
+          onClick={() => setActiveSidebarTab('collections')}
+          className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-widest transition-all ${
+            activeSidebarTab === 'collections'
+              ? 'text-brand-400 border-b-2 border-brand-500 bg-surface-900/40'
+              : 'text-surface-500 hover:text-surface-300'
+          }`}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-            <path d="M8 3a.5.5 0 0 1 .5.5v4h4a.5.5 0 0 1 0 1h-4v4a.5.5 0 0 1-1 0v-4h-4a.5.5 0 0 1 0-1h4v-4A.5.5 0 0 1 8 3z" />
-          </svg>
+          Collections
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSidebarTab('history')}
+          className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-widest transition-all ${
+            activeSidebarTab === 'history'
+              ? 'text-brand-400 border-b-2 border-brand-500 bg-surface-900/40'
+              : 'text-surface-500 hover:text-surface-300'
+          }`}
+        >
+          History
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto py-2 px-1.5 space-y-0.5">
-        {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
-          </div>
-        )}
-
-        {!isLoading && error && (
-          <div className="px-3 py-4 text-xs text-red-400 text-center">
-            <p className="font-semibold mb-1">Unable to load collections</p>
+      {activeSidebarTab === 'collections' ? (
+        <>
+          {/* Header */}
+          <div className="px-3 py-3 border-b border-surface-800/60 flex items-center justify-between shrink-0">
+            <h2 className="text-xs font-bold text-surface-400 uppercase tracking-widest">Collections</h2>
             <button
               type="button"
-              onClick={() => loadCollections(workspaceId)}
-              className="text-brand-400 hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {!isLoading && !error && collections.length === 0 && (
-          <div className="px-3 py-6 text-center">
-            <div className="flex justify-center mb-3">
-              <svg className="w-8 h-8 text-surface-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v8.25" />
-              </svg>
-            </div>
-            <p className="text-xs text-surface-500 mb-3">No collections yet.</p>
-            <p className="text-xs text-surface-600 mb-3">Create your first collection to organize your API requests.</p>
-            <button
-              type="button"
+              title="New Collection"
               onClick={() => setShowNewCollectionModal(true)}
-              className="text-xs text-brand-400 hover:text-brand-300 font-semibold border border-brand-500/30 px-3 py-1.5 rounded-lg hover:bg-brand-500/10 transition-all"
+              className="flex items-center justify-center w-6 h-6 rounded text-surface-500 hover:text-brand-400 hover:bg-surface-800 transition-colors"
             >
-              + Create Collection
+              <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
+                <path d="M8 3a.5.5 0 0 1 .5.5v4h4a.5.5 0 0 1 0 1h-4v4a.5.5 0 0 1-1 0v-4h-4a.5.5 0 0 1 0-1h4v-4A.5.5 0 0 1 8 3z" />
+              </svg>
             </button>
           </div>
-        )}
 
-        {!isLoading && collections.map((col) => (
-          <CollectionSection
-            key={col.id}
-            collection={col}
-            activeRequestId={activeRequest?.id ?? null}
-            onSelectRequest={handleSelectRequest}
-            setContextMenu={setContextMenu}
-            onAddFolder={handleAddFolder}
-            isDirty={currentIsDirty}
-          />
-        ))}
-      </div>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto py-2 px-1.5 space-y-0.5">
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+              </div>
+            )}
 
-      {/* Footer: New Request button */}
-      {collections.length > 0 && (
-        <div className="px-2 py-2 border-t border-surface-800/60 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              setSaveDialogData({ name: 'New Request', collectionId: collections[0]?.id ?? '', folderId: null });
-              setShowSaveDialog(true);
-            }}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs text-surface-400 hover:text-brand-400 hover:bg-surface-800/60 border border-dashed border-surface-800 hover:border-brand-500/30 transition-all"
-          >
-            <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
-              <path d="M8 3a.5.5 0 0 1 .5.5v4h4a.5.5 0 0 1 0 1h-4v4a.5.5 0 0 1-1 0v-4h-4a.5.5 0 0 1 0-1h4v-4A.5.5 0 0 1 8 3z" />
-            </svg>
-            New Request
-          </button>
-        </div>
+            {!isLoading && error && (
+              <div className="px-3 py-4 text-xs text-red-400 text-center">
+                <p className="font-semibold mb-1">Unable to load collections</p>
+                <button
+                  type="button"
+                  onClick={() => loadCollections(workspaceId)}
+                  className="text-brand-400 hover:underline"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {!isLoading && !error && collections.length === 0 && (
+              <div className="px-3 py-6 text-center">
+                <div className="flex justify-center mb-3">
+                  <svg className="w-8 h-8 text-surface-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v8.25" />
+                  </svg>
+                </div>
+                <p className="text-xs text-surface-500 mb-3">No collections yet.</p>
+                <p className="text-xs text-surface-600 mb-3">Create your first collection to organize your API requests.</p>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCollectionModal(true)}
+                  className="text-xs text-brand-400 hover:text-brand-300 font-semibold border border-brand-500/30 px-3 py-1.5 rounded-lg hover:bg-brand-500/10 transition-all"
+                >
+                  + Create Collection
+                </button>
+              </div>
+            )}
+
+            {!isLoading && collections.map((col) => (
+              <CollectionSection
+                key={col.id}
+                collection={col}
+                activeRequestId={activeRequest?.id ?? null}
+                onSelectRequest={handleSelectRequest}
+                setContextMenu={setContextMenu}
+                onAddFolder={handleAddFolder}
+                isDirty={currentIsDirty}
+              />
+            ))}
+          </div>
+
+          {/* Footer: New Request button */}
+          {collections.length > 0 && (
+            <div className="px-2 py-2 border-t border-surface-800/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setSaveDialogData({ name: 'New Request', collectionId: collections[0]?.id ?? '', folderId: null });
+                  setShowSaveDialog(true);
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs text-surface-400 hover:text-brand-400 hover:bg-surface-800/60 border border-dashed border-surface-800 hover:border-brand-500/30 transition-all"
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                  <path d="M8 3a.5.5 0 0 1 .5.5v4h4a.5.5 0 0 1 0 1h-4v4a.5.5 0 0 1-1 0v-4h-4a.5.5 0 0 1 0-1h4v-4A.5.5 0 0 1 8 3z" />
+                </svg>
+                New Request
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* History Header Action */}
+          <div className="px-3 py-3 border-b border-surface-800/60 flex items-center justify-between shrink-0">
+            <h2 className="text-xs font-bold text-surface-400 uppercase tracking-widest">Recent Requests</h2>
+            {history.length > 0 && (
+              <button
+                type="button"
+                id="clear-history-btn"
+                onClick={clearHistory}
+                className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase tracking-wider transition-colors"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+
+          {/* History Content */}
+          <div className="flex-1 overflow-y-auto py-2 px-1.5 space-y-1">
+            {isHistoryLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+              </div>
+            )}
+
+            {!isHistoryLoading && history.length === 0 && (
+              <p className="text-xs text-surface-600 italic text-center py-8">No request history yet</p>
+            )}
+
+            {!isHistoryLoading && history.map((item) => (
+              <div
+                key={item.id}
+                className="group flex items-center justify-between gap-1.5 px-2 py-1.5 rounded-lg hover:bg-surface-800/40 transition-all cursor-pointer relative"
+                onClick={() => selectHistoryItem(item)}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <MethodBadge method={item.method} />
+                  <span className={`text-[10px] font-bold ${
+                    item.status === 'SUCCESS' ? 'text-emerald-400' : 'text-red-450'
+                  }`}>
+                    {item.statusCode || item.status}
+                  </span>
+                  <span className="text-xs text-surface-300 truncate font-mono">
+                    {item.url}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {item.durationMs && (
+                    <span className="text-[10px] text-surface-600">{item.durationMs}ms</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); deleteHistoryItem(item.id); }}
+                    className="text-surface-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Context Menu */}

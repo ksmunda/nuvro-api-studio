@@ -4,8 +4,8 @@ import { requestsRouter } from './requests.js';
 import { collectionsRouter } from './collections.js';
 import { foldersRouter } from './folders.js';
 import { workspacesRouter } from './workspaces.js';
-
 import { environmentsRouter } from './environments.js';
+import { historyRouter } from './history.js';
 
 export const router: Router = Router();
 
@@ -51,6 +51,4 @@ router.use('/requests', requestsRouter);
 
 router.use('/environments', environmentsRouter);
 
-router.use('/history', (_req, res) => {
-  res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'History routes not yet implemented' } });
-});
+router.use('/history', historyRouter);

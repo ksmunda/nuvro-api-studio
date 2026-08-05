@@ -16,11 +16,61 @@ requestsRouter.post(
   async (req, res, next) => {
     try {
       const response = await requestExecutionService.execute(req.body, req.user!.id);
+      
+      // Sanitize request headers
+      const rawHeaders = req.body.headers || [];
+      const sanitizedHeaders = rawHeaders.map((h: { key?: string; value?: string }) => {
+        const lowerKey = (h.key || '').toLowerCase();
+        if (['authorization', 'cookie', 'api-key', 'apikey', 'x-api-key', 'token', 'secret'].includes(lowerKey)) {
+          return { ...h, value: '[REDACTED]' };
+        }
+        return h;
+      });
+
+      // Log successful request execution to history
+      await requestService.logHistory({
+        userId: req.user!.id,
+        method: req.body.method,
+        url: req.body.url,
+        requestHeaders: JSON.stringify(sanitizedHeaders),
+        requestBody: req.body.bodyContent || null,
+        status: 'SUCCESS',
+        statusCode: response.statusCode,
+        responseHeaders: JSON.stringify(response.headers),
+        responseBody: typeof response.body === 'string' ? response.body : JSON.stringify(response.body),
+        responseSize: response.sizeBytes,
+        durationMs: response.durationMs,
+      });
+
       res.status(200).json({
         success: true,
         data: response,
       });
     } catch (error) {
+      // Sanitize request headers
+      const rawHeaders = req.body.headers || [];
+      const sanitizedHeaders = rawHeaders.map((h: { key?: string; value?: string }) => {
+        const lowerKey = (h.key || '').toLowerCase();
+        if (['authorization', 'cookie', 'api-key', 'apikey', 'x-api-key', 'token', 'secret'].includes(lowerKey)) {
+          return { ...h, value: '[REDACTED]' };
+        }
+        return h;
+      });
+
+      const errMessage = error instanceof Error ? error.message : String(error);
+      const isTimeout = errMessage.toLowerCase().includes('timeout') || errMessage.toLowerCase().includes('aborted');
+
+      // Log failed request execution to history
+      await requestService.logHistory({
+        userId: req.user!.id,
+        method: req.body.method,
+        url: req.body.url,
+        requestHeaders: JSON.stringify(sanitizedHeaders),
+        requestBody: req.body.bodyContent || null,
+        status: isTimeout ? 'TIMEOUT' : 'ERROR',
+        errorMessage: errMessage,
+      });
+
       next(error);
     }
   },

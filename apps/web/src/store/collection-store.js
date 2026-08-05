@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { CollectionsClient } from '@nuvro/api-client';
 import { useRequestStore } from './request-store.js';
-const collectionsClient = new CollectionsClient();
+import { API_BASE } from '../config/api.js';
+const collectionsClient = new CollectionsClient(`${API_BASE}/api/v1`);
 const cleanKeyValuePair = (pairs) => {
     return pairs
         .map((p) => ({ key: p.key.trim(), value: p.value.trim(), enabled: p.enabled }))

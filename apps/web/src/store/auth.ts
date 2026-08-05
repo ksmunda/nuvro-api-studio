@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getApiUrl } from '../config/api.js';
 
 export interface User {
   id: string;
@@ -27,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     try {
       // Dispatch server-side logout request to clear httpOnly cookies
-      await fetch('/api/v1/auth/logout', { method: 'POST' });
+      await fetch(getApiUrl('/api/v1/auth/logout'), { method: 'POST' });
     } catch {
       // Fail silently, clear client state regardless
     }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { EnvironmentsClient } from '@nuvro/api-client';
-const client = new EnvironmentsClient();
+import { API_BASE } from '../config/api.js';
+const client = new EnvironmentsClient(`${API_BASE}/api/v1`);
 export const useEnvironmentStore = create((set, get) => ({
     environments: [],
     activeEnvironmentId: null,
