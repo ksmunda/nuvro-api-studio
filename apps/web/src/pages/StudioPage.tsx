@@ -20,7 +20,6 @@ export function StudioPage() {
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  const tabs = useRequestTabsStore((s) => s.tabs);
   const openNewRequest = useRequestTabsStore((s) => s.openNewRequest);
 
   useEffect(() => {
@@ -28,13 +27,33 @@ export function StudioPage() {
   }, [initialize]);
 
   useEffect(() => {
-    if (activeWorkspaceId) {
-      const workspaceTabs = tabs.filter((t) => t.workspaceId === activeWorkspaceId);
+    if (!activeWorkspaceId) return;
+
+    const initWorkspaceTabs = () => {
+      const state = useRequestTabsStore.getState();
+      const workspaceTabs = state.tabs.filter((t) => t.workspaceId === activeWorkspaceId);
       if (workspaceTabs.length === 0) {
         openNewRequest(activeWorkspaceId);
+      } else {
+        const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+        if (!activeTab || activeTab.workspaceId !== activeWorkspaceId) {
+          const firstTab = workspaceTabs[0];
+          if (firstTab) useRequestTabsStore.getState().activateTab(firstTab.id);
+        }
       }
+    };
+
+    // Wait for Zustand persist hydration before reading tab state
+    if (useRequestTabsStore.persist.hasHydrated()) {
+      initWorkspaceTabs();
+    } else {
+      const unsub = useRequestTabsStore.persist.onFinishHydration(() => {
+        initWorkspaceTabs();
+        unsub();
+      });
+      return () => unsub();
     }
-  }, [activeWorkspaceId, tabs, openNewRequest]);
+  }, [activeWorkspaceId, openNewRequest]);
 
   return (
     <div className="flex flex-col min-h-screen bg-surface-950 text-surface-100 font-sans relative overflow-hidden select-none">

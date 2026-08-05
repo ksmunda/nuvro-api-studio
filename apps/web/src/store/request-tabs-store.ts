@@ -30,6 +30,10 @@ export interface RequestTab {
   activeTab: 'params' | 'auth' | 'headers' | 'body';
   responseActiveTab: 'body' | 'headers';
 
+  // Timestamps
+  createdAt: number;
+  lastAccessedAt: number;
+
   // Snapshot for dirty checking
   initialState: {
     method: HttpMethod;
@@ -69,6 +73,8 @@ const createDefaultTabState = () => {
     error: null,
     activeTab: 'params' as const,
     responseActiveTab: 'body' as const,
+    createdAt: Date.now(),
+    lastAccessedAt: Date.now(),
     initialState: {
       method,
       url,
@@ -131,6 +137,8 @@ interface RequestTabsState {
   updateActiveTab: (updates: Partial<RequestTab>) => void;
   saveActiveTab: (savedRequest: any) => void;
   syncFromRequestStore: (storeState: any) => void;
+  validateWorkspaceTabs: (workspaceId: string, collections: any[]) => void;
+  duplicateTab: (tabId: string) => string | null;
 }
 
 export const useRequestTabsStore = create<RequestTabsState>()(
@@ -254,6 +262,8 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             error: null,
             activeTab: 'params',
             responseActiveTab: 'body',
+            createdAt: Date.now(),
+            lastAccessedAt: Date.now(),
             initialState: {
               method: request.method as HttpMethod,
               url: request.url,
@@ -277,7 +287,12 @@ export const useRequestTabsStore = create<RequestTabsState>()(
         activateTab: (tabId) => {
           const tab = get().tabs.find((t) => t.id === tabId);
           if (tab) {
-            set({ activeTabId: tabId });
+            set((state) => ({
+              activeTabId: tabId,
+              tabs: state.tabs.map((t) =>
+                t.id === tabId ? { ...t, lastAccessedAt: Date.now() } : t
+              ),
+            }));
             loadTabIntoRequestStore(tab);
           }
         },
@@ -463,6 +478,64 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             }),
           }));
         },
+
+        validateWorkspaceTabs: (workspaceId, collections) => {
+          const allRequestIds = new Set(
+            (collections || []).flatMap((c) => c.requests || []).map((r: any) => r.id)
+          );
+
+          set((state) => {
+            const validatedTabs = state.tabs.map((t) => {
+              if (t.workspaceId === workspaceId && t.requestId && !allRequestIds.has(t.requestId)) {
+                return {
+                  ...t,
+                  requestId: null,
+                  title: `${t.title} (Recovered)`,
+                };
+              }
+              return t;
+            });
+
+            return { tabs: validatedTabs };
+          });
+        },
+
+        duplicateTab: (tabId) => {
+          const source = get().tabs.find((t) => t.id === tabId);
+          if (!source) return null;
+
+          const newId = `new_${Math.random().toString(36).substr(2, 9)}`;
+          const now = Date.now();
+          const duplicated: RequestTab = {
+            ...source,
+            id: newId,
+            requestId: null, // Duplicate is always unsaved/draft
+            title: `${source.title} (Copy)`,
+            response: null,
+            isLoading: false,
+            error: null,
+            createdAt: now,
+            lastAccessedAt: now,
+            initialState: {
+              method: source.method,
+              url: source.url,
+              headers: JSON.parse(JSON.stringify(source.headers)),
+              queryParams: JSON.parse(JSON.stringify(source.queryParams)),
+              authType: source.authType,
+              authConfig: JSON.parse(JSON.stringify(source.authConfig)),
+              bodyType: source.bodyType,
+              bodyContent: source.bodyContent,
+            },
+          };
+
+          set((state) => ({
+            tabs: [...state.tabs, duplicated],
+            activeTabId: newId,
+          }));
+
+          loadTabIntoRequestStore(duplicated);
+          return newId;
+        },
       };
     },
     {
@@ -503,6 +576,8 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             error: null,
             activeTab: t.activeTab,
             responseActiveTab: t.responseActiveTab,
+            createdAt: t.createdAt || Date.now(),
+            lastAccessedAt: t.lastAccessedAt || Date.now(),
             initialState: t.initialState
               ? {
                   method: t.initialState.method,
@@ -530,6 +605,53 @@ export const useRequestTabsStore = create<RequestTabsState>()(
           })),
           activeTabId: state.activeTabId,
         };
+      },
+      version: 1, // Incremented from 0 to support createdAt/lastAccessedAt migration
+      migrate: (persisted: any, version: number) => {
+        if (version === 0) {
+          // Migrate v0 → v1: add timestamps
+          const state = persisted as any;
+          if (state && state.tabs) {
+            const now = Date.now();
+            state.tabs = state.tabs.map((t: any) => ({
+              ...t,
+              createdAt: t.createdAt || now,
+              lastAccessedAt: t.lastAccessedAt || now,
+            }));
+          }
+          return state;
+        }
+        return persisted;
+      },
+      storage: {
+        getItem: (name: string) => {
+          try {
+            const raw = globalThis.localStorage.getItem(name);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            // Validate basic structure
+            if (!parsed || !parsed.state || !Array.isArray(parsed.state.tabs)) {
+              globalThis.localStorage.removeItem(name);
+              return null;
+            }
+            return parsed;
+          } catch {
+            // Corrupted JSON — remove and start fresh
+            try { globalThis.localStorage.removeItem(name); } catch { /* noop */ }
+            return null;
+          }
+        },
+        setItem: (name: string, value: unknown) => {
+          try {
+            globalThis.localStorage.setItem(name, JSON.stringify(value));
+          } catch {
+            // QuotaExceededError or SecurityError — silently fail
+            // Tab state will not persist but the app continues working
+          }
+        },
+        removeItem: (name: string) => {
+          try { globalThis.localStorage.removeItem(name); } catch { /* noop */ }
+        },
       },
     }
   )

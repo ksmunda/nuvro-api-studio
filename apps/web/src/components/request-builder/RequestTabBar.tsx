@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRequestTabsStore, checkTabDirty } from '../../store/request-tabs-store.js';
 import { useWorkspaceStore } from '../../store/workspace-store.js';
 
 export function RequestTabBar() {
   const { activeWorkspaceId } = useWorkspaceStore();
-  const { tabs, activeTabId, activateTab, closeTab, openNewRequest } = useRequestTabsStore();
+  const { tabs, activeTabId, activateTab, closeTab, closeOtherTabs, closeAllTabs, openNewRequest, duplicateTab } = useRequestTabsStore();
+  const [contextMenuTabId, setContextMenuTabId] = useState<string | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+  const menuRef = useRef<globalThis.HTMLDivElement>(null);
 
   // Filter tabs by workspace
   const workspaceTabs = tabs.filter((t) => t.workspaceId === activeWorkspaceId);
@@ -22,8 +25,27 @@ export function RequestTabBar() {
     return colors[method] || 'text-surface-400';
   };
 
+  // Close context menu on outside click
+  useEffect(() => {
+    if (!contextMenuTabId) return;
+    const handler = (e: globalThis.MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as globalThis.Node)) {
+        setContextMenuTabId(null);
+      }
+    };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [contextMenuTabId]);
+
+  const handleContextMenu = (e: React.MouseEvent, tabId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenuTabId(tabId);
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+  };
+
   return (
-    <div className="flex items-center gap-1 bg-surface-950/40 border border-surface-900 rounded-xl px-2 py-1.5 overflow-x-auto select-none no-scrollbar" data-testid="request-tab-bar">
+    <div className="flex items-center gap-1 bg-surface-950/40 border border-surface-900 rounded-xl px-2 py-1.5 overflow-x-auto select-none no-scrollbar relative" data-testid="request-tab-bar">
       {workspaceTabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         const dirty = checkTabDirty(tab);
@@ -31,6 +53,7 @@ export function RequestTabBar() {
           <div
             key={tab.id}
             onClick={() => activateTab(tab.id)}
+            onContextMenu={(e) => handleContextMenu(e, tab.id)}
             data-testid={`request-tab-${tab.id}`}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all select-none shrink-0 ${
               isActive
@@ -45,7 +68,7 @@ export function RequestTabBar() {
               {tab.title}
             </span>
             {dirty && (
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Unsaved changes" />
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Unsaved changes" data-testid={`dirty-indicator-${tab.id}`} />
             )}
             <button
               type="button"
@@ -78,6 +101,41 @@ export function RequestTabBar() {
           <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
         </svg>
       </button>
+
+      {/* Tab Context Menu */}
+      {contextMenuTabId && (
+        <div
+          ref={menuRef}
+          data-testid="tab-context-menu"
+          className="fixed z-50 bg-surface-900 border border-surface-700 rounded-lg shadow-xl py-1 text-xs min-w-[160px]"
+          style={{ left: contextMenuPos.x, top: contextMenuPos.y }}
+        >
+          <button
+            type="button"
+            data-testid="ctx-duplicate-tab"
+            onClick={() => { duplicateTab(contextMenuTabId); setContextMenuTabId(null); }}
+            className="w-full text-left px-3 py-1.5 hover:bg-surface-800 text-surface-200 transition-colors"
+          >
+            Duplicate Tab
+          </button>
+          <button
+            type="button"
+            data-testid="ctx-close-others"
+            onClick={() => { closeOtherTabs(contextMenuTabId); setContextMenuTabId(null); }}
+            className="w-full text-left px-3 py-1.5 hover:bg-surface-800 text-surface-200 transition-colors"
+          >
+            Close Other Tabs
+          </button>
+          <button
+            type="button"
+            data-testid="ctx-close-all"
+            onClick={() => { closeAllTabs(); setContextMenuTabId(null); }}
+            className="w-full text-left px-3 py-1.5 hover:bg-surface-800 text-red-400 transition-colors"
+          >
+            Close All Tabs
+          </button>
+        </div>
+      )}
     </div>
   );
 }

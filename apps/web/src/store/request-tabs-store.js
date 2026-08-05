@@ -27,6 +27,8 @@ const createDefaultTabState = () => {
         error: null,
         activeTab: 'params',
         responseActiveTab: 'body',
+        createdAt: Date.now(),
+        lastAccessedAt: Date.now(),
         initialState: {
             method,
             url,
@@ -178,6 +180,8 @@ export const useRequestTabsStore = create()(persist((set, get) => {
                 error: null,
                 activeTab: 'params',
                 responseActiveTab: 'body',
+                createdAt: Date.now(),
+                lastAccessedAt: Date.now(),
                 initialState: {
                     method: request.method,
                     url: request.url,
@@ -198,7 +202,10 @@ export const useRequestTabsStore = create()(persist((set, get) => {
         activateTab: (tabId) => {
             const tab = get().tabs.find((t) => t.id === tabId);
             if (tab) {
-                set({ activeTabId: tabId });
+                set((state) => ({
+                    activeTabId: tabId,
+                    tabs: state.tabs.map((t) => t.id === tabId ? { ...t, lastAccessedAt: Date.now() } : t),
+                }));
                 loadTabIntoRequestStore(tab);
             }
         },
@@ -373,6 +380,56 @@ export const useRequestTabsStore = create()(persist((set, get) => {
                 }),
             }));
         },
+        validateWorkspaceTabs: (workspaceId, collections) => {
+            const allRequestIds = new Set((collections || []).flatMap((c) => c.requests || []).map((r) => r.id));
+            set((state) => {
+                const validatedTabs = state.tabs.map((t) => {
+                    if (t.workspaceId === workspaceId && t.requestId && !allRequestIds.has(t.requestId)) {
+                        return {
+                            ...t,
+                            requestId: null,
+                            title: `${t.title} (Recovered)`,
+                        };
+                    }
+                    return t;
+                });
+                return { tabs: validatedTabs };
+            });
+        },
+        duplicateTab: (tabId) => {
+            const source = get().tabs.find((t) => t.id === tabId);
+            if (!source)
+                return null;
+            const newId = `new_${Math.random().toString(36).substr(2, 9)}`;
+            const now = Date.now();
+            const duplicated = {
+                ...source,
+                id: newId,
+                requestId: null, // Duplicate is always unsaved/draft
+                title: `${source.title} (Copy)`,
+                response: null,
+                isLoading: false,
+                error: null,
+                createdAt: now,
+                lastAccessedAt: now,
+                initialState: {
+                    method: source.method,
+                    url: source.url,
+                    headers: JSON.parse(JSON.stringify(source.headers)),
+                    queryParams: JSON.parse(JSON.stringify(source.queryParams)),
+                    authType: source.authType,
+                    authConfig: JSON.parse(JSON.stringify(source.authConfig)),
+                    bodyType: source.bodyType,
+                    bodyContent: source.bodyContent,
+                },
+            };
+            set((state) => ({
+                tabs: [...state.tabs, duplicated],
+                activeTabId: newId,
+            }));
+            loadTabIntoRequestStore(duplicated);
+            return newId;
+        },
     };
 }, {
     name: 'nuvro:request-tabs-session',
@@ -412,6 +469,8 @@ export const useRequestTabsStore = create()(persist((set, get) => {
                 error: null,
                 activeTab: t.activeTab,
                 responseActiveTab: t.responseActiveTab,
+                createdAt: t.createdAt || Date.now(),
+                lastAccessedAt: t.lastAccessedAt || Date.now(),
                 initialState: t.initialState
                     ? {
                         method: t.initialState.method,
@@ -439,6 +498,62 @@ export const useRequestTabsStore = create()(persist((set, get) => {
             })),
             activeTabId: state.activeTabId,
         };
+    },
+    version: 1, // Incremented from 0 to support createdAt/lastAccessedAt migration
+    migrate: (persisted, version) => {
+        if (version === 0) {
+            // Migrate v0 → v1: add timestamps
+            const state = persisted;
+            if (state && state.tabs) {
+                const now = Date.now();
+                state.tabs = state.tabs.map((t) => ({
+                    ...t,
+                    createdAt: t.createdAt || now,
+                    lastAccessedAt: t.lastAccessedAt || now,
+                }));
+            }
+            return state;
+        }
+        return persisted;
+    },
+    storage: {
+        getItem: (name) => {
+            try {
+                const raw = globalThis.localStorage.getItem(name);
+                if (!raw)
+                    return null;
+                const parsed = JSON.parse(raw);
+                // Validate basic structure
+                if (!parsed || !parsed.state || !Array.isArray(parsed.state.tabs)) {
+                    globalThis.localStorage.removeItem(name);
+                    return null;
+                }
+                return parsed;
+            }
+            catch {
+                // Corrupted JSON — remove and start fresh
+                try {
+                    globalThis.localStorage.removeItem(name);
+                }
+                catch { /* noop */ }
+                return null;
+            }
+        },
+        setItem: (name, value) => {
+            try {
+                globalThis.localStorage.setItem(name, JSON.stringify(value));
+            }
+            catch {
+                // QuotaExceededError or SecurityError — silently fail
+                // Tab state will not persist but the app continues working
+            }
+        },
+        removeItem: (name) => {
+            try {
+                globalThis.localStorage.removeItem(name);
+            }
+            catch { /* noop */ }
+        },
     },
 }));
 //# sourceMappingURL=request-tabs-store.js.map

@@ -345,12 +345,17 @@ export function CollectionSidebar({ workspaceId }: { workspaceId: string }) {
 
   const menuRef = useRef<globalThis.HTMLDivElement>(null);
 
-  // Load collections on mount / workspaceId change
   useEffect(() => {
     if (workspaceId) {
       loadCollections(workspaceId);
     }
   }, [workspaceId, loadCollections]);
+
+  useEffect(() => {
+    if (workspaceId && collections.length > 0) {
+      useRequestTabsStore.getState().validateWorkspaceTabs(workspaceId, collections);
+    }
+  }, [workspaceId, collections]);
 
   // Load history when tab is clicked
   useEffect(() => {

@@ -93,12 +93,16 @@ export function CollectionSidebar({ workspaceId }) {
     const [saveDialogData, setSaveDialogData] = useState({ name: 'New Request', collectionId: '', folderId: null });
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const menuRef = useRef(null);
-    // Load collections on mount / workspaceId change
     useEffect(() => {
         if (workspaceId) {
             loadCollections(workspaceId);
         }
     }, [workspaceId, loadCollections]);
+    useEffect(() => {
+        if (workspaceId && collections.length > 0) {
+            useRequestTabsStore.getState().validateWorkspaceTabs(workspaceId, collections);
+        }
+    }, [workspaceId, collections]);
     // Load history when tab is clicked
     useEffect(() => {
         if (activeSidebarTab === 'history') {
