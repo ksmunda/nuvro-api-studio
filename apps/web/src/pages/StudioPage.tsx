@@ -36,7 +36,9 @@ export function StudioPage() {
         openNewRequest(activeWorkspaceId);
       } else {
         const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
-        if (!activeTab || activeTab.workspaceId !== activeWorkspaceId) {
+        if (activeTab && activeTab.workspaceId === activeWorkspaceId) {
+          useRequestTabsStore.getState().activateTab(activeTab.id);
+        } else {
           const firstTab = workspaceTabs[0];
           if (firstTab) useRequestTabsStore.getState().activateTab(firstTab.id);
         }
