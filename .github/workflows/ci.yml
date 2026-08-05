@@ -115,6 +115,14 @@ jobs:
         env:
           DATABASE_URL: postgresql://nuvro:nuvro_dev_password@127.0.0.1:5432/nuvro_dev
 
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libsoup-3.0-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
       - name: Build
         run: pnpm build
 
@@ -143,6 +151,7 @@ jobs:
             tests/e2e/playwright-report/
             tests/e2e/test-results/
           retention-days: 5
+          if-no-files-found: ignore
 
   build:
     name: Build
@@ -170,6 +179,14 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm --filter @nuvro/database db:generate
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libsoup-3.0-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Build all packages
         run: pnpm build
