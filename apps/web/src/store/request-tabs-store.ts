@@ -94,6 +94,67 @@ const cleanKeyValuePair = (pairs: KeyValuePair[]): KeyValuePair[] => {
     .filter((p) => p.key !== '');
 };
 
+
+const scrubTab = (t: RequestTab): any => {
+  return {
+    id: t.id,
+    requestId: t.requestId,
+    collectionId: t.collectionId,
+    folderId: t.folderId,
+    workspaceId: t.workspaceId,
+    title: t.title,
+    method: t.method,
+    url: t.url,
+    headers: t.headers.map((h) => {
+      const lower = h.key.toLowerCase();
+      if (lower.includes('auth') || lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('cookie')) {
+        return { key: h.key, value: '••••••••', enabled: h.enabled };
+      }
+      return h;
+    }),
+    queryParams: t.queryParams.map((q) => {
+      const lower = q.key.toLowerCase();
+      if (lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('pass')) {
+        return { key: q.key, value: '••••••••', enabled: q.enabled };
+      }
+      return q;
+    }),
+    authType: t.authType,
+    authConfig: {},
+    bodyType: t.bodyType,
+    bodyContent: t.bodyType === 'NONE' ? '' : t.bodyContent,
+    response: null,
+    isLoading: false,
+    error: null,
+    activeTab: t.activeTab,
+    responseActiveTab: t.responseActiveTab,
+    createdAt: t.createdAt || Date.now(),
+    lastAccessedAt: t.lastAccessedAt || Date.now(),
+    initialState: t.initialState ? {
+      method: t.initialState.method,
+      url: t.initialState.url,
+      headers: t.initialState.headers.map((h) => {
+        const lower = h.key.toLowerCase();
+        if (lower.includes('auth') || lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('cookie')) {
+          return { key: h.key, value: '••••••••', enabled: h.enabled };
+        }
+        return h;
+      }),
+      queryParams: t.initialState.queryParams.map((q) => {
+        const lower = q.key.toLowerCase();
+        if (lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('pass')) {
+          return { key: q.key, value: '••••••••', enabled: q.enabled };
+        }
+        return q;
+      }),
+      authType: t.initialState.authType,
+      authConfig: {},
+      bodyType: t.initialState.bodyType,
+      bodyContent: t.initialState.bodyType === 'NONE' ? '' : t.initialState.bodyContent,
+    } : null,
+  };
+};
+
 export const checkTabDirty = (tab: RequestTab): boolean => {
   if (!tab.initialState) return false;
 
@@ -125,9 +186,11 @@ export const checkTabDirty = (tab: RequestTab): boolean => {
 
 interface RequestTabsState {
   tabs: RequestTab[];
+  closedTabs: RequestTab[];
   activeTabId: string | null;
 
   // Actions
+  reopenClosedTab: (workspaceId: string) => void;
   openNewRequest: (workspaceId: string, collectionId?: string | null, folderId?: string | null) => string;
   openSavedRequest: (request: any, workspaceId: string) => void;
   activateTab: (tabId: string) => void;
@@ -194,7 +257,37 @@ export const useRequestTabsStore = create<RequestTabsState>()(
 
       return {
         tabs: [],
+        closedTabs: [],
         activeTabId: null,
+
+
+        reopenClosedTab: (workspaceId) => {
+          set((state) => {
+            const index = state.closedTabs.findIndex(t => t.workspaceId === workspaceId);
+            if (index === -1) return state; // No closed tabs for this workspace
+
+            const tabToReopen = state.closedTabs[index];
+            if (!tabToReopen) return state;
+            
+            const newClosedTabs = [...state.closedTabs];
+            newClosedTabs.splice(index, 1);
+
+            const newId = `new_${Math.random().toString(36).substr(2, 9)}`;
+            const reopenedTab: RequestTab = {
+              ...tabToReopen,
+              id: newId,
+              lastAccessedAt: Date.now(),
+            };
+
+            loadTabIntoRequestStore(reopenedTab);
+
+            return {
+              tabs: [...state.tabs, reopenedTab],
+              activeTabId: newId,
+              closedTabs: newClosedTabs,
+            };
+          });
+        },
 
         openNewRequest: (workspaceId, collectionId = null, folderId = null) => {
           const id = `new_${Math.random().toString(36).substr(2, 9)}`;
@@ -315,10 +408,11 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             nextActiveId = lastTab ? lastTab.id : null;
           }
 
-          set({
+          set((state) => ({
             tabs: filtered,
             activeTabId: nextActiveId,
-          });
+            closedTabs: [tab, ...state.closedTabs].slice(0, 10),
+          }));
 
           if (nextActiveId) {
             const nextTab = filtered.find((t) => t.id === nextActiveId);
@@ -354,10 +448,11 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             if (!confirm) return;
           }
 
-          set({
+          set((state) => ({
             tabs: [currentTab],
             activeTabId: tabId,
-          });
+            closedTabs: [...state.tabs.filter((t) => t.id !== tabId).reverse(), ...state.closedTabs].slice(0, 10),
+          }));
           loadTabIntoRequestStore(currentTab);
         },
 
@@ -368,10 +463,11 @@ export const useRequestTabsStore = create<RequestTabsState>()(
             if (!confirm) return;
           }
 
-          set({
+          set((state) => ({
             tabs: [],
             activeTabId: null,
-          });
+            closedTabs: [...state.tabs.reverse(), ...state.closedTabs].slice(0, 10),
+          }));
 
           // Reset request store
           const reqStore = useRequestStore.getState();
@@ -541,68 +637,9 @@ export const useRequestTabsStore = create<RequestTabsState>()(
     {
       name: 'nuvro:request-tabs-session',
       partialize: (state) => {
-        // Exclude authentication credentials, headers, queryParams secrets, or sensitive request bodies for security
         return {
-          tabs: state.tabs.map((t) => ({
-            id: t.id,
-            requestId: t.requestId,
-            collectionId: t.collectionId,
-            folderId: t.folderId,
-            workspaceId: t.workspaceId,
-            title: t.title,
-            method: t.method,
-            url: t.url,
-            // Keep parameters headers/queryParams but strip values if they contain authorization or potential credentials
-            headers: t.headers.map((h) => {
-              const lower = h.key.toLowerCase();
-              if (lower.includes('auth') || lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('cookie')) {
-                return { key: h.key, value: '••••••••', enabled: h.enabled };
-              }
-              return h;
-            }),
-            queryParams: t.queryParams.map((q) => {
-              const lower = q.key.toLowerCase();
-              if (lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('pass')) {
-                return { key: q.key, value: '••••••••', enabled: q.enabled };
-              }
-              return q;
-            }),
-            authType: t.authType,
-            authConfig: {}, // Strip sensitive authorization config
-            bodyType: t.bodyType,
-            bodyContent: t.bodyType === 'NONE' ? '' : t.bodyContent, // Strip body contents if raw binary or potentially sensitive
-            response: null, // Do not persist large response payloads in session storage
-            isLoading: false,
-            error: null,
-            activeTab: t.activeTab,
-            responseActiveTab: t.responseActiveTab,
-            createdAt: t.createdAt || Date.now(),
-            lastAccessedAt: t.lastAccessedAt || Date.now(),
-            initialState: t.initialState
-              ? {
-                  method: t.initialState.method,
-                  url: t.initialState.url,
-                  headers: t.initialState.headers.map((h) => {
-                    const lower = h.key.toLowerCase();
-                    if (lower.includes('auth') || lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('cookie')) {
-                      return { key: h.key, value: '••••••••', enabled: h.enabled };
-                    }
-                    return h;
-                  }),
-                  queryParams: t.initialState.queryParams.map((q) => {
-                    const lower = q.key.toLowerCase();
-                    if (lower.includes('key') || lower.includes('token') || lower.includes('secret') || lower.includes('pass')) {
-                      return { key: q.key, value: '••••••••', enabled: q.enabled };
-                    }
-                    return q;
-                  }),
-                  authType: t.initialState.authType,
-                  authConfig: {},
-                  bodyType: t.initialState.bodyType,
-                  bodyContent: t.initialState.bodyType === 'NONE' ? '' : t.initialState.bodyContent,
-                }
-              : null,
-          })),
+          tabs: state.tabs.map(scrubTab),
+          closedTabs: (state.closedTabs || []).map(scrubTab),
           activeTabId: state.activeTabId,
         };
       },

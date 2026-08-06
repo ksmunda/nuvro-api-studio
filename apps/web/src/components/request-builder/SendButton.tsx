@@ -21,6 +21,8 @@ export function SendButton({ onSend }: SendButtonProps) {
   return (
     <button
       type="button"
+      id="send-request-btn"
+      data-testid="send-request-btn"
       onClick={handleAction}
       disabled={isDisabled}
       className={`px-6 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all select-none min-w-28 flex items-center justify-center gap-2 ${

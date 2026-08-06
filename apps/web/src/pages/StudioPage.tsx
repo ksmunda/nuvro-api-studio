@@ -5,6 +5,7 @@ import { ResponseViewer } from '../components/response-viewer/ResponseViewer.js'
 import { CollectionSidebar } from '../components/sidebar/CollectionSidebar.js';
 import { RequestTabBar } from '../components/request-builder/RequestTabBar.js';
 import { useRequestTabsStore } from '../store/request-tabs-store.js';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js';
 
 import { EnvironmentSelector } from '../components/environments/EnvironmentSelector.js';
 import { EnvironmentModal } from '../components/environments/EnvironmentModal.js';
@@ -21,6 +22,8 @@ export function StudioPage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const openNewRequest = useRequestTabsStore((s) => s.openNewRequest);
+
+  useKeyboardShortcuts(activeWorkspaceId);
 
   useEffect(() => {
     initialize();
